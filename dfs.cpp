@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define OUTLAND 1
+#define OUTLAND 0
 
 vector<string> readLinesFromFile(const string& filename) {
     vector<string> lines;
