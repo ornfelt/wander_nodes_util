@@ -51,7 +51,7 @@ public:
         if (v == target_v) {
             if (should_print) {
                 cout << v << " ";
-                cout << "Target found!" << endl;
+                cout << "Target found!\n" << endl;
             }
             target_found = true;
             // Add to found_targets
@@ -96,6 +96,59 @@ public:
         }
 
         return target_found;
+    }
+
+    bool DFS_search_same_zone(int start_id, int target_id, unordered_map<string, string>& zones) {
+        if (should_print) {
+            cout << "start_id: " << start_id << endl;
+            cout << "target_id: " << target_id << endl;
+        }
+
+        // First check found_targets
+		//if target_id in self.found_targets.keys() and start_id in self.found_targets[target_id]
+		if (found_targets.find(target_id) != found_targets.end() && found_targets[target_id].find(start_id) != found_targets[target_id].end())
+        {
+            //std::cout << "Target " << target_id << " already found from start_id " << start_id << std::endl;
+            return true;
+        }
+
+        unordered_set<int> visited;
+        target_found = false;
+
+        for (int vertex : graph[start_id]) {
+            if (visited.find(vertex) == visited.end() && !target_found && zones[std::to_string(vertex)] == zones[std::to_string(start_id)]) {
+                DFSUtilSameZone(vertex, visited, target_id, zones);
+            }
+        }
+
+        return target_found;
+    }
+
+    inline void DFSUtilSameZone(int v, unordered_set<int>& visited, int target_v, unordered_map<string, string>& zones) {
+        visited.insert(v);
+
+        if (v == target_v) {
+            if (should_print) {
+                cout << v << " ";
+                cout << "Target found!\n" << endl;
+            }
+            target_found = true;
+            // Add to found_targets
+            found_targets[target_v] = visited;
+			// Here, all (except first and last) in visited can be used as found_targets
+			// as well from every previous node in visited. It requires visited to be ordered however.
+            return;
+        } else if (!target_found) {
+            if (should_print) {
+                cout << v << " ";
+            }
+
+            for (int neighbour : graph[v]) {
+                if (visited.find(neighbour) == visited.end() && zones[std::to_string(neighbour)] == zones[std::to_string(target_v)]) {
+                    DFSUtilSameZone(neighbour, visited, target_v, zones);
+                }
+            }
+        }
     }
 
     void setPrint(bool print) {
@@ -242,7 +295,7 @@ int main() {
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(3273, 3330);
     std::cout << "\n" << test_bool << endl;
-    test_bool = g.DFS_search(3209, 3225);
+    test_bool = g.DFS_search_same_zone(3209, 3225, nr_zones);
     std::cout << "\n" << test_bool << endl;
 	// Test print zones
 	std::cout << "3228 zone_id: " << nr_zones["3228"] << std::endl;
@@ -273,15 +326,23 @@ int main() {
 #endif
             int other_node_id = std::stoi(other_node_pair.first);
 
-            if (node_id != other_node_id) {
+            //if (node_id != other_node_id) {
 			// Only search nodes from the same zone. Doesn't quite work since zones aren't checked in DFS_search...
 #if OUTLAND
 			//if (node_id != other_node_id && ol_zones[to_string(node_id)] == ol_zones[to_string(other_node_id)]) {
 #else
-			//if (node_id != other_node_id && nr_zones[to_string(node_id)] == nr_zones[to_string(other_node_id)]) {
+			if (node_id != other_node_id && nr_zones[to_string(node_id)] == nr_zones[to_string(other_node_id)]) {
 #endif
-                bool can_reach = g.DFS_search(node_id, other_node_id);
+                //bool can_reach = g.DFS_search(node_id, other_node_id);
+#if OUTLAND
+                //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, ol_zones);
+#else
+                bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, nr_zones);
+#endif
                 loop_counter++;
+				// For printing
+				//if (loop_counter % 300 == 0) g.setPrint(true);
+				//else g.setPrint(false);
 
                 if (!can_reach) {
                     cout << "CAN'T REACH: " << other_node_id << " FROM NODE: " << node_id << endl;
