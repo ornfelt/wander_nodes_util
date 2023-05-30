@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define OUTLAND 0
+#define OUTLAND 1
 
 vector<string> readLinesFromFile(const string& filename) {
     vector<string> lines;
@@ -28,7 +28,7 @@ vector<string> readLinesFromFile(const string& filename) {
 class Graph {
 private:
     unordered_map<int, vector<int>> graph;
-	// found_targets is used to optimize... What could be done to further optimize is to
+	// found_targets is used to optimize... What could potentially be done to further optimize is to
 	// go through the visited nodes and mark those as found targets based on the previous
 	// nodes in visited as start_nodes. Requires visited to be ordered, preferably vector for looping.
     unordered_map<int, unordered_set<int>> found_targets;
@@ -56,8 +56,6 @@ public:
             target_found = true;
             // Add to found_targets
             found_targets[target_v] = visited;
-			// Here, all (except first and last) in visited can be used as found_targets
-			// as well from every previous node in visited. It requires visited to be ordered however.
             return;
         } else if (!target_found) {
             if (should_print) {
@@ -290,12 +288,18 @@ int main() {
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(2418, 2536);
     std::cout << "\n" << test_bool << endl;
+    test_bool = g.DFS_search(2746, 2702);
+    std::cout << "\n" << test_bool << endl;
+    test_bool = g.DFS_search_same_zone(2649, 2626, ol_zones);
+    std::cout << "\n" << test_bool << endl;
 #else
     bool test_bool = g.DFS_search(2802, 2900);
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(3273, 3330);
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search_same_zone(3209, 3225, nr_zones);
+    std::cout << "\n" << test_bool << endl;
+    test_bool = g.DFS_search_same_zone(2970, 3003, nr_zones);
     std::cout << "\n" << test_bool << endl;
 	// Test print zones
 	std::cout << "3228 zone_id: " << nr_zones["3228"] << std::endl;
@@ -326,18 +330,18 @@ int main() {
 #endif
             int other_node_id = std::stoi(other_node_pair.first);
 
-            //if (node_id != other_node_id) {
+            if (node_id != other_node_id) {
 			// Only search nodes from the same zone. Doesn't quite work since zones aren't checked in DFS_search...
 #if OUTLAND
 			//if (node_id != other_node_id && ol_zones[to_string(node_id)] == ol_zones[to_string(other_node_id)]) {
 #else
-			if (node_id != other_node_id && nr_zones[to_string(node_id)] == nr_zones[to_string(other_node_id)]) {
+			//if (node_id != other_node_id && nr_zones[to_string(node_id)] == nr_zones[to_string(other_node_id)]) {
 #endif
-                //bool can_reach = g.DFS_search(node_id, other_node_id);
+                bool can_reach = g.DFS_search(node_id, other_node_id);
 #if OUTLAND
                 //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, ol_zones);
 #else
-                bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, nr_zones);
+                //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, nr_zones);
 #endif
                 loop_counter++;
 				// For printing
