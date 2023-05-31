@@ -1,44 +1,46 @@
 # My utility scripts for generating / visualizing wanderer nodes based on [Trickerer's](https://github.com/trickerer/Trinity-Bots) Npcbots
 
-## Live map of wandering bots
+# Live map of wandering bots
 
 I created a live map of wandering bots (based on [Azerothcore playermap](https://github.com/azerothcore/playermap)). The 
 
-# Azeroth:
+To use the botmap you need to alter your AzerothCore / TrinityCore fork so that when a wander node is reached
+
+## Azeroth:
 ![Bot map Azeroth](./images/botmap_azeroth.png?raw=true "Bot map Azeroth")
 
-# Outland:
+## Outland:
 ![Bot map Outland](./images/botmap_outland.png?raw=true "Bot map Outland")
 
-# Northrend:
+## Northrend:
 ![Bot map Northrend](./images/botmap_northrend.png?raw=true "Bot map Northrend")
 
-## Interactive wander nodes map
+# Interactive wander nodes map
 
-# Interaction:
+## Interaction:
 
-The wander node maps (see html-files) are generated using pyvis, so you can interact with the nodes by dragging them around or zooming to get a closer look. The nodes are directed and you can see the corresponding ID if you zoom in.
+The wander node maps (see html-files) are generated using pyvis, so you can interact with the nodes by dragging them around or zooming to get a closer look. The nodes are directed and you can see the corresponding ID's if you zoom in.
 
 Example of enlarged view of Shadowmoon Valley / Terokkar Forest:
 
 ![Interactive map example](./images/outland_interactive_map_example.png?raw=true "Interactive map example")
 
-# Outland:
+## Outland:
 ![Interactive map Outland](./images/outland_interactive_map.png?raw=true "Interactive map Outland")
 
-# Northrend:
+## Northrend:
 ![Interactive map Northrend](./images/northrend_interactive_map.png?raw=true "Interactive map Northrend")
 
-# Eastern Kingdoms:
+## Eastern Kingdoms:
 ![Interactive map EK](./images/eastern_kingdoms_interactive_map.png?raw=true "Interactive map EK")
 
-# Kalimdor:
+## Kalimdor:
 ![Interactive map Kalimdor](./images/kalimdor_interactive_map.png?raw=true "Interactive map Kalimdor")
 
-# Azeroth (Eastern Kingdoms and Kalimdor):
+## Azeroth (Eastern Kingdoms and Kalimdor):
 ![Interactive map Azeroth](./images/azeroth_interactive_map.png?raw=true "Interactive map Azeroth")
 
-## Info
+# Info
 
 I don't recommend using any scripts unless you look into the code and try to understand what it does. The code is for personal use and I haven't generalized it for external usage. This respo is mostly for showing cool features and tracking changes :)
 
