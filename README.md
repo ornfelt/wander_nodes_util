@@ -2,18 +2,18 @@
 
 # Live map of wandering bots
 
-I created a live map of wandering bots (based on [Azerothcore playermap](https://github.com/azerothcore/playermap)). The 
+I created a live map of wandering bots (based on [Azerothcore playermap](https://github.com/azerothcore/playermap)). The bots position is based on their current wander node and is updated when they reach new their target node.
 
-To use the botmap you need to alter your AzerothCore / TrinityCore fork so that when a wander node is reached
+To use the botmap you need to alter your AzerothCore / TrinityCore fork so that when a wander node is reached (when OnWanderNodeReached() is called), you store that info in a separate database.
 
 ## Azeroth:
-![Bot map Azeroth](./images/botmap_azeroth.png?raw=true "Bot map Azeroth")
+![Bot map Azeroth](./images/botmap_azeroth.gif?raw=true "Bot map Azeroth")
 
 ## Outland:
-![Bot map Outland](./images/botmap_outland.png?raw=true "Bot map Outland")
+![Bot map Outland](./images/botmap_outland.gif?raw=true "Bot map Outland")
 
 ## Northrend:
-![Bot map Northrend](./images/botmap_northrend.png?raw=true "Bot map Northrend")
+![Bot map Northrend](./images/botmap_northrend.gif?raw=true "Bot map Northrend")
 
 # Interactive wander nodes map
 
