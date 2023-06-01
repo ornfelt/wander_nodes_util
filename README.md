@@ -53,7 +53,7 @@ dfs.cpp can be used to search the nodes based on SQL entries. The script checks 
 The script currently supports Outland and Northrend nodes, but it would be trivial to add support for Azeroth nodes as well.
 
 There's similar functionality in [wander_nodes_util.ipynb](./wander_nodes_util.ipynb).
-The notebook also contains scripts for generating SQL entries based on gm-logs, adjustments / updates of HandyNotes.lua etc. The code is mostly for personal use but can be alterered to serve your specific need.
+The notebook also contains scripts for generating SQL entries based on gm-logs, adjustments / updates of HandyNotes.lua etc (it's sort of a mess). The code is mostly for personal use but can be alterered to serve your specific need.
 
 [pyis.ipynb](./pyis.ipynb) contains code for generating the interactive wander nodes.
 

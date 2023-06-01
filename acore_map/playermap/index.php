@@ -3,9 +3,7 @@
 // Run with: php -S 127.0.0.1:8000
 
 /* Execute python script to generate db entries of bots */
-/* $command = escapeshellcmd('/home/jonas/Code2/Javascript/acore_map/player_characters/py_insert.py'); */
-//$command = escapeshellcmd('C:\Users\jonas\AppData\Local\Programs\Python\Python39\python.exe C:\Users\jonas\OneDrive\Documents\Code\acore_map\player_characters\py_insert.py');
-$command = escapeshellcmd('python ../player_characters/py_insert_v2.py');
+$command = escapeshellcmd('python ../player_characters/py_insert.py');
 $output = shell_exec($command);
 /* echo $output; */
 

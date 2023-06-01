@@ -1,6 +1,7 @@
 ##!/usr/bin/env python3
 
 import mysql.connector
+from os.path import exists
 
 # pip3 install mysql-connector-python-rf
 # Windows:
@@ -8,6 +9,9 @@ import mysql.connector
 
 # Cron example:
 # */5 * * * * /usr/bin/python3 /home/jonas/Code2/Javascript/player_characters/py_insert.py > /home/jonas/wander_cron_log.txt 2>&1
+
+N = 100 # Amount of wandering bots
+server_path = "D:/My files/svea_laptop/acore_wander_14/azerothcore/build/bin/RelWithDebInfo"
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -21,16 +25,16 @@ mycursor = mydb.cursor()
 mycursor.execute("SELECT * FROM characters")
 myresult = mycursor.fetchall()
 
-for x in myresult:
-  print(x)
+#for x in myresult:
+#  print(x)
 
-print("-----------------------------------------")
+#print("-----------------------------------------")
 # Clean db
 mycursor.execute("DELETE FROM characters")
 mydb.commit()
 print(mycursor.rowcount, "records deleted.")
 
-print("-----------------------------------------")
+#print("-----------------------------------------")
 
 # Prepare the SQL query
 #sql = "INSERT INTO customers (name, address) VALUES (%s, %s)"
@@ -43,7 +47,7 @@ print("-----------------------------------------")
 #print(mycursor.rowcount, "record inserted.")
 
 # Read wandering bot info:
-with open("C:/Users/jonas/wander_nodes_test.txt") as file:
+with open(server_path + "/wander_nodes_data/wander_nodes_all.txt") as file:
     lines = [line.rstrip() for line in file]
     #print(lines)
 
@@ -53,8 +57,6 @@ zones = []
 x_coords = []
 y_coords = []
 
-# Can only be fetched through WanderNodeReached
-N = 100 # Amount of wandering bots
 levels = [""] * N
 #levels = ['' for _ in range(N)]
 names = [""] * N
@@ -89,7 +91,17 @@ entry_dict = {k: v for v, k in enumerate(entries)}
 
 print("entry_dict:", entry_dict)
 
-# Loop again to update based on reached nodes (not efficient, but works)
+# Read node file for each wanderer (if exists)
+lines = [] # Reset lines list
+for entry in entries:
+    file_path = server_path + "/wander_nodes_data/" + entry + "_pos.txt"
+    if exists(file_path):
+        with open(file_path) as file:
+            #lines = [line.rstrip() for line in file]
+            lines.append(file.read())
+            #print(lines)
+
+# Loop new list (N lines)
 for idx, line in enumerate(lines):
     if "WanderNodeReached!" in line and "map: 559" not in line and "map: 529" not in line and "map: 489" not in line:
         bot_entry = line.split("Bot: ")[1].split(", ")[0]
@@ -125,13 +137,6 @@ for idx, line in enumerate(lines):
         bot_gender = line.split("gender: ")[1].split(", ")[0]
         #print("Bot gender:",bot_gender)
         bot_genders[entry_dict[bot_entry]] = bot_gender
-
-# Clean-up file
-#if len(lines) > 10000:
-#    with open("C:/Users/jonas/wander_nodes_test.txt", "w") as f:
-#        for idx, line in enumerate(lines):
-#            if "Spawning wandering bot" in line or idx > 9000:
-#                f.write(line+'\n')
 
 # Base sql
 sql = "INSERT INTO characters(guid,account,name,class,race,level,gender,position_x,position_y,map,zone,extra_flags,online,taximask,innTriggerId) VALUES"
