@@ -23,7 +23,7 @@ The wander node maps (see html-files) are generated using pyvis, so you can inte
 
 Example of enlarged view of Shadowmoon Valley / Terokkar Forest:
 
-![Interactive map example](./images/outland_interactive_map_example.png?raw=true "Interactive map example")
+![Interactive map example](./images/interactive_wander_nodes.gif?raw=true "Interactive map example")
 
 ## Outland:
 ![Interactive map Outland](./images/outland_interactive_map.png?raw=true "Interactive map Outland")
