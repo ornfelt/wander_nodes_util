@@ -56,7 +56,7 @@ The notebook also contains scripts for generating SQL entries based on gm-logs, 
 
 ## Files:
 
-wander_nodes.txt includes Azeroth wander nodes (created by [Trickerer](https://github.com/trickerer)
+wander_nodes.txt includes Azeroth wander nodes (created by [Trickerer](https://github.com/trickerer))
 
 2023_04_25_00_outland_complete.sql includes my SQL entries for Outland
 
