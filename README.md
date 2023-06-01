@@ -17,6 +17,9 @@ The interactive maps showcased below can be used directly through the included H
 ## Northrend:
 ![Bot map Northrend](./images/botmap_northrend.gif?raw=true "Bot map Northrend")
 
+## Hover to see bot info:
+![Bot map hover](./images/botmap_hover.png?raw=true "Bot map hover")
+
 # Interactive wander nodes map
 
 ## Interaction:
