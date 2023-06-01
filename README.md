@@ -6,6 +6,8 @@ I created a live map of wandering bots (based on [Azerothcore playermap](https:/
 
 To use the botmap you need to alter your AzerothCore / TrinityCore fork so that when a wander node is reached (when OnWanderNodeReached() is called), you store that info in a separate database.
 
+The interactive maps showcased below can be used directly through the included HTML files. The botmap and other utility scripts requires a bit more attention and I might improve on the instructions if there's interest in the tools. See more info in the info section further down.
+
 ## Azeroth:
 ![Bot map Azeroth](./images/botmap_azeroth.gif?raw=true "Bot map Azeroth")
 
@@ -42,7 +44,7 @@ Example of enlarged view of Shadowmoon Valley / Terokkar Forest:
 
 # Info
 
-**I don't recommend using any scripts unless you look into the code and try to understand what it does. The code is for personal use and I haven't generalized it for external usage. This respo is mostly for showing cool features and tracking changes :)**
+***I don't recommend using any scripts unless you look into the code and try to understand what it does. The code is for personal use and I haven't generalized it for external usage. This respo is mostly for showing cool features and tracking changes :)***
 
 dfs.cpp can be used to search the nodes based on SQL entries. The script checks that every node is reachable from every other node. The script also supports checking that every node is reachable from every other node in current zone ONLY.
 The script currently supports Outland and Northrend nodes, but it would be trivial to add support for Azeroth nodes as well.
@@ -51,3 +53,11 @@ There's similar functionality in [wander_nodes_util.ipynb](./wander_nodes_util.i
 The notebook also contains scripts for generating SQL entries based on gm-logs, adjustments / updates of HandyNotes.lua etc. The code is mostly for personal use but can be alterered to serve your specific need.
 
 [pyis.ipynb](./pyis.ipynb) contains code for generating the interactive wander nodes.
+
+## Files:
+
+wander_nodes.txt includes Azeroth wander nodes (created by [Trickerer](https://github.com/trickerer)
+
+2023_04_25_00_outland_complete.sql includes my SQL entries for Outland
+
+2023_04_25_00_outland_complete.sql includes my SQL entries for Northrend
