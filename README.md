@@ -47,7 +47,7 @@ Example of enlarged view of Shadowmoon Valley / Terokkar Forest:
 
 # Info
 
-***I don't recommend using any scripts unless you look into the code and try to understand what it does. The code is for personal use and I haven't generalized it for external usage. This respo is mostly for showing cool features and tracking changes :)***
+***I don't recommend using any scripts unless you look into the code and try to understand what it does. The code is for personal use and I haven't generalized it for external usage. This repo is mostly for showing cool features and tracking changes :)***
 
 dfs.cpp can be used to search the nodes based on SQL entries. The script checks that every node is reachable from every other node. The script also supports checking that every node is reachable from every other node in current zone ONLY.
 The script currently supports Outland and Northrend nodes, but it would be trivial to add support for Azeroth nodes as well.
