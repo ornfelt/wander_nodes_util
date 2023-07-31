@@ -27,8 +27,8 @@ $world_db[1]['encoding']      = 'utf8mb4';           // SQL connection encoding
 $characters_db[1]['addr']     = '127.0.0.1:3306'; // SQL server IP:port this DB located on
 $characters_db[1]['user']     = 'acore';           // SQL server login this DB located on
 $characters_db[1]['pass']     = 'acore';       // SQL server pass this DB located on
-//$characters_db[1]['name']     = 'acore_characters';     // Character Database name
-$characters_db[1]['name']     = 'player_characters';     // Character Database name
+$characters_db[1]['name']     = 'acore_characters';     // Character Database name
+//$characters_db[1]['name']     = 'player_characters';     // Character Database name
 //$characters_db[1]['encoding'] = 'utf8';           // SQL connection encoding
 $characters_db[1]['encoding'] = 'utf8mb4';           // SQL connection encoding
 

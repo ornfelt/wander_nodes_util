@@ -11,7 +11,7 @@ from os.path import exists
 # */5 * * * * /usr/bin/python3 /home/jonas/Code2/Javascript/player_characters/py_insert.py > /home/jonas/wander_cron_log.txt 2>&1
 
 N = 150 # Amount of wandering bots
-server_path = "D:/My files/svea_laptop/acore_06_26/acore_06_26/build_eluna/bin/RelWithDebInfo"
+server_path = "/home/jonas/acore_relwithdebinfo/bin"
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -181,6 +181,7 @@ mycursor.execute(sql)
 mydb.commit()
 # Print the number of rows affected
 print(mycursor.rowcount, "records inserted.")
+mydb.close()
 
 #sql = "INSERT INTO customers (name, address) VALUES (%s, %s)"
 #values = ("John Smith", "123 Main St")

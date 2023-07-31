@@ -59,7 +59,8 @@ for ($i = 0; $i < $maps_count; $i++) {
 $arr = array();
 $i=$maps_count;
 //$query = $characters_db->query("SELECT `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
+//$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
+$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters_playermap` WHERE `online`='1' ORDER BY `name`");
 
 while ($result = $characters_db->fetch_assoc($query)) {
     if ($result['map'] == 530 && $result['position_y'] > -1000 || in_array($result['map'], $outland_inst)) {
@@ -88,7 +89,8 @@ while ($result = $characters_db->fetch_assoc($query)) {
             if ($gm_add_suffix && $show_player) {
                 //$result['name'] = $result['name'].' <small style="color: #EABA28;">{GM}</small>';
 				//$result['name'] .= " (".$result['guid'].")";
-				$result['name'] = $result['name']." (".$result['guid'].")";
+				
+				//$result['name'] = $result['name']." (".$result['guid'].")";
             }
         }
     }

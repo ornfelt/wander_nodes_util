@@ -3,9 +3,8 @@
 // Run with: php -S 127.0.0.1:8000
 
 /* Execute python script to generate db entries of bots */
-$command = escapeshellcmd('python ../player_characters/py_insert.py');
-$output = shell_exec($command);
-/* echo $output; */
+//$command = escapeshellcmd('python ../player_characters/py_insert.py');
+//$output = shell_exec($command);
 
 require_once("defines.php");
 require_once("pomm_conf.php");
@@ -206,7 +205,7 @@ body {
 <SCRIPT TYPE="text/javascript">
 
 // Print output from python script (run from php script, see above)
-console.log(<?= json_encode($output); ?>);
+//console.log(<?= json_encode($output); ?>);
 
 var current_map = 0;
 var time = <?php echo $time ?>;
@@ -716,14 +715,18 @@ function show(data)
     if(!in_array(mpoints[n].map_id, maps_array))
       instances[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
     else if(mpoints[n].player > 1)
-      groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
+		// HEHE: Add onclick
+		//groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
+      groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
     else
     {
       if(mpoints[n].faction)
         point = "<?php echo $img_base ?>horde.gif";
       else
         point = "<?php echo $img_base ?>allia.gif";
-      single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
+	// HEHE: Add onclick
+      //single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
+	  single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
     }
     n++;
   }
@@ -762,6 +765,8 @@ function show(data)
   {
     document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
   }
+  // HEHE: Always outland (1) / northrend (2)
+  switchworld(1);
 }
 
 function statusController(status_process_id,diff)
@@ -967,6 +972,30 @@ function start()
   console.log("PAGE START");
 
 }
+
+function copy(text) {
+    var input = document.createElement('textarea');
+    input.innerHTML = text;
+    document.body.appendChild(input);
+    input.select();
+    var result = document.execCommand('copy');
+    document.body.removeChild(input);
+    return result;
+}
+
+function onClickNode(e)
+{
+	var t, data;
+	t=document.getElementById("tip");
+	//console.log("TEST CLICK: " + e.target);
+	//console.log("TEST CLICK: " + t.innerHTML);
+	
+	const tip_split = t.innerHTML.split("(");
+	var copy_text = ".npcb go " + tip_split[1].split(")")[0];
+	console.log("COPYING TEXT: " + copy_text);
+	copy(copy_text);
+}
+
 </SCRIPT>
 <BODY onload=start()>
 

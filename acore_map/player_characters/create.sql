@@ -1,8 +1,5 @@
-CREATE DATABASE `player_characters` DEFAULT CHARACTER SET UTF8MB4 COLLATE utf8mb4_general_ci;
-GRANT ALL PRIVILEGES ON `player_characters` . * TO 'acore'@'localhost' WITH GRANT OPTION;
-
-use player_characters;
-CREATE TABLE IF NOT EXISTS `characters` (
+use acore_characters;
+CREATE TABLE IF NOT EXISTS `characters_playermap` (
   `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
   `account` int unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
   `name` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -88,6 +85,3 @@ CREATE TABLE IF NOT EXISTS `characters` (
   KEY `idx_online` (`online`),
   KEY `idx_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player System';
-
--- Dumping data for table player_characters.characters: ~0 rows (approximately)
-DELETE FROM `characters`;
