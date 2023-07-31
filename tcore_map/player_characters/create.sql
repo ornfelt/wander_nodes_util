@@ -1,4 +1,4 @@
-use acore_characters;
+use characters;
 CREATE TABLE IF NOT EXISTS `characters_playermap` (
   `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
   `account` int unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',

@@ -7,30 +7,30 @@ $site_encoding    = "utf8";
 $db_type          = 'MySQL';
 
 $realm_db['addr']     = '127.0.0.1:3306';         // SQL server IP:port this realmd located on
-$realm_db['user']     = 'acore';                   // SQL server login this realmd located on
-$realm_db['pass']     = 'acore';               // SQL server pass this realmd located on
-$realm_db['name']     = 'acore_auth';                   // realmd DB name
-//$realm_db['encoding'] = 'utf8';                   // SQL connection encoding
-$realm_db['encoding'] = 'utf8mb4';                   // SQL connection encoding
+$realm_db['user']     = 'trinity';                   // SQL server login this realmd located on
+$realm_db['pass']     = 'trinity';               // SQL server pass this realmd located on
+$realm_db['name']     = 'auth';                   // realmd DB name
+$realm_db['encoding'] = 'utf8';                   // SQL connection encoding
+//$realm_db['encoding'] = 'utf8mb4';                   // SQL connection encoding
 
 //==== For each realm, you must have $world_db and $characters_db and $server filled in, label each with the realm id: ex: $world_db[REALMID]['addr'] === //
 
 // position in array must represent realmd ID
 $world_db[1]['addr']          = '127.0.0.1:3306'; // SQL server IP:port this DB located on
-$world_db[1]['user']          = 'acore';           // SQL server login this DB located on
-$world_db[1]['pass']          = 'acore';       // SQL server pass this DB located on
-$world_db[1]['name']          = 'acore_world';          // World Database name, by default "mangos" for MaNGOS, "world" for AzerothCore/TrinityCore
-//$world_db[1]['encoding']      = 'utf8';           // SQL connection encoding
-$world_db[1]['encoding']      = 'utf8mb4';           // SQL connection encoding
+$world_db[1]['user']          = 'trinity';           // SQL server login this DB located on
+$world_db[1]['pass']          = 'trinity';       // SQL server pass this DB located on
+$world_db[1]['name']          = 'world';          // World Database name, by default "mangos" for MaNGOS, "world" for AzerothCore/TrinityCore
+$world_db[1]['encoding']      = 'utf8';           // SQL connection encoding
+//$world_db[1]['encoding']      = 'utf8mb4';           // SQL connection encoding
 
 // position in array must represent realmd ID
 $characters_db[1]['addr']     = '127.0.0.1:3306'; // SQL server IP:port this DB located on
-$characters_db[1]['user']     = 'acore';           // SQL server login this DB located on
-$characters_db[1]['pass']     = 'acore';       // SQL server pass this DB located on
-$characters_db[1]['name']     = 'acore_characters';     // Character Database name
+$characters_db[1]['user']     = 'trinity';           // SQL server login this DB located on
+$characters_db[1]['pass']     = 'trinity';       // SQL server pass this DB located on
+$characters_db[1]['name']     = 'characters';     // Character Database name
 //$characters_db[1]['name']     = 'player_characters';     // Character Database name
-//$characters_db[1]['encoding'] = 'utf8';           // SQL connection encoding
-$characters_db[1]['encoding'] = 'utf8mb4';           // SQL connection encoding
+$characters_db[1]['encoding'] = 'utf8';           // SQL connection encoding
+//$characters_db[1]['encoding'] = 'utf8mb4';           // SQL connection encoding
 
 //---- Game Server Configuration ----
 

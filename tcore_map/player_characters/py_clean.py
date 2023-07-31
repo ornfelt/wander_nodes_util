@@ -11,13 +11,13 @@ from os.path import exists
 # */5 * * * * /usr/bin/python3 /home/jonas/Code2/Javascript/player_characters/py_insert.py > /home/jonas/wander_cron_log.txt 2>&1
 
 N = 150 # Amount of wandering bots
-server_path = "/home/jonas/acore_relwithdebinfo/bin"
+server_path = "/home/jonas/tcore_relwithdebinfo/bin"
 
 mydb = mysql.connector.connect(
   host="localhost",
-  user="acore",
-  password="acore",
-  database="acore_characters"
+  user="trinity",
+  password="trinity",
+  database="characters"
 )
 
 mycursor = mydb.cursor()
