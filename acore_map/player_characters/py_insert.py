@@ -10,8 +10,8 @@ from os.path import exists
 # Cron example:
 # */5 * * * * /usr/bin/python3 /home/jonas/Code2/Javascript/player_characters/py_insert.py > /home/jonas/wander_cron_log.txt 2>&1
 
-N = 100 # Amount of wandering bots
-server_path = "D:/My files/svea_laptop/acore_wander_14/azerothcore/build/bin/RelWithDebInfo"
+N = 150 # Amount of wandering bots
+server_path = "D:/My files/svea_laptop/acore_06_26/acore_06_26/build_eluna/bin/RelWithDebInfo"
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -66,7 +66,7 @@ bot_genders = [""] * N
 
 for idx, line in enumerate(lines):
     #if idx <= 6:
-    if "Spawning wandering bot!" in line and "Map 559" not in line and "Map 529" not in line and "Map 489" not in line:
+    if "Spawning wandering bot!" in line and "Map 559" not in line and "Map 529" not in line and "Map 489" not in line and "Map 30" not in line:
         bot_entry = line.split("Bot: ")[1].split(", ")[0]
         #print("Bot entry:",bot_entry)
         entries.append(bot_entry)
@@ -103,7 +103,7 @@ for entry in entries:
 
 # Loop new list (N lines)
 for idx, line in enumerate(lines):
-    if "WanderNodeReached!" in line and "map: 559" not in line and "map: 529" not in line and "map: 489" not in line:
+    if "WanderNodeReached!" in line and "map: 559" not in line and "map: 529" not in line and "map: 489" not in line and "map: 30" not in line:
         bot_entry = line.split("Bot: ")[1].split(", ")[0]
         #print("Bot entry:",bot_entry)
         bot_map = line.split("map: ")[1].split(", ")[0]

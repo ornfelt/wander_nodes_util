@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define OUTLAND 0
+#define OUTLAND 1
 
 vector<string> readLinesFromFile(const string& filename) {
     vector<string> lines;
@@ -168,23 +168,22 @@ std::string extract_index(const std::string& input, const char sep, const int id
 }
 
 int main() {
-    vector<string> ol_lines = readLinesFromFile("2023_04_25_00_outland_complete.sql");
-    //vector<string> ol_lines = readLinesFromFile("./testing_nodes/2023_04_25_00_outland_complete.sql");
+    vector<string> sql_lines = readLinesFromFile("2023_06_09_00_creature_template_npcbot_wander_nodes.sql");
 
-    vector<string> nr_lines = readLinesFromFile("2023_05_14_00_northrend_complete.sql");
-    //vector<string> nr_lines = readLinesFromFile("./testing_nodes/2023_05_14_00_northrend_complete.sql");
-
-#if OUTLAND
-    unordered_map<string, vector<string>> ol_vertices;
-    unordered_map<string, string> ol_zones;
+    unordered_map<string, vector<string>> node_vertices;
+    unordered_map<string, string> node_zones;
     // Loop Outland nodes
-    for (const string& line : ol_lines) {
+    for (const string& line : sql_lines) {
         if (!line.empty() && line[0] == '(') {
             //string map_id = line.substr(line.find(",") + 1, line.find(",", line.find(",") + 1) - line.find(",") - 1);
             std::string map_id = extract_index(line, ',', 2);
             //std::cout << "Map ID: " << map_id << std::endl;
 
+#if OUTLAND
             if (map_id == "530") { // Outland Map ID
+#else
+            if (map_id == "571") { // Northrend Map ID
+#endif
                 string node_id = line.substr(line.find("(") + 1, line.find(",") - line.find("(") - 1);
 				//std::cout << "node_id: " << node_id << std::endl;
                 //string node_links = line.substr(line.find("'") + 1);
@@ -198,68 +197,16 @@ int main() {
                 while (ss >> link) {
                     links.push_back(link);
                 }
-                ol_vertices[node_id] = links;
+                node_vertices[node_id] = links;
 
                 // Also add zone_ids
                 //string zone_id = line.substr(line.find(",", line.find(",") + 1) + 1);
                 std::string zone_id = extract_index(line, ',', 3);
 				//std::cout << "zone_id" << zone_id << std::endl;
-                ol_zones[node_id] = zone_id;
+                node_zones[node_id] = zone_id;
             }
         }
     }
-
-#else
-    unordered_map<string, vector<string>> nr_vertices;
-    unordered_map<string, string> nr_zones;
-
-    // Loop Northrend nodes from Outland lines
-    for (const string& line : ol_lines) {
-        if (!line.empty() && line[0] == '(') {
-            std::string map_id = extract_index(line, ',', 2);
-            if (map_id == "571") { // Northrend Map ID
-                string node_id = line.substr(line.find("(") + 1, line.find(",") - line.find("(") - 1);
-                std::string node_links = extract_index(line, '\'', 3);
-                node_links = std::regex_replace(node_links, std::regex(":0"), "");
-                stringstream ss(node_links);
-                vector<string> links;
-                string link;
-                while (ss >> link) {
-                    links.push_back(link);
-                }
-                nr_vertices[node_id] = links;
-
-                // Also add zone_ids
-                std::string zone_id = extract_index(line, ',', 3);
-                nr_zones[node_id] = zone_id;
-            }
-        }
-    }
-
-    // Loop Northrend nodes from Northrend lines
-    for (const string& line : nr_lines) {
-        if (!line.empty() && line[0] == '(') {
-            std::string map_id = extract_index(line, ',', 2);
-            if (map_id == "571") { // Northrend Map ID
-                string node_id = line.substr(line.find("(") + 1, line.find(",") - line.find("(") - 1);
-                std::string node_links = extract_index(line, '\'', 3);
-                node_links = std::regex_replace(node_links, std::regex(":0"), "");
-                node_links = node_links.substr(0, node_links.find(":0")).replace(node_links.length() - 1, 1, "");
-                stringstream ss(node_links);
-                vector<string> links;
-                string link;
-                while (ss >> link) {
-                    links.push_back(link);
-                }
-                nr_vertices[node_id] = links;
-
-                // Also add zone_ids
-                std::string zone_id = extract_index(line, ',', 3);
-                nr_zones[node_id] = zone_id;
-            }
-        }
-    }
-#endif
 
     // DFS using Graph class
     Graph g;
@@ -267,11 +214,7 @@ int main() {
     // Add edges to the graph
     // g.addEdge(0, 1);
 
-#if OUTLAND
-    for (auto& pair : ol_vertices) {
-#else
-    for (auto& pair : nr_vertices) {
-#endif
+    for (auto& pair : node_vertices) {
         int node_id = std::stoi(pair.first);
         vector<std::string>& node_links = pair.second;
 
@@ -281,8 +224,10 @@ int main() {
     }
 
     g.setPrint(true);
+
+//#if !OUTLAND
 #if OUTLAND
-    bool test_bool = g.DFS_search(2418, 2474);
+	bool test_bool = g.DFS_search(2418, 2474);
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(2500, 2602);
     std::cout << "\n" << test_bool << endl;
@@ -290,59 +235,40 @@ int main() {
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(2746, 2702);
     std::cout << "\n" << test_bool << endl;
-    test_bool = g.DFS_search_same_zone(2649, 2626, ol_zones);
+    test_bool = g.DFS_search_same_zone(2649, 2626, node_zones);
     std::cout << "\n" << test_bool << endl;
 #else
     bool test_bool = g.DFS_search(2802, 2900);
     std::cout << "\n" << test_bool << endl;
     test_bool = g.DFS_search(3273, 3330);
     std::cout << "\n" << test_bool << endl;
-    test_bool = g.DFS_search_same_zone(3209, 3225, nr_zones);
+    test_bool = g.DFS_search_same_zone(3209, 3225, node_zones);
     std::cout << "\n" << test_bool << endl;
-    test_bool = g.DFS_search_same_zone(2970, 3003, nr_zones);
+    test_bool = g.DFS_search_same_zone(2970, 3003, node_zones);
     std::cout << "\n" << test_bool << endl;
 	// Test print zones
-	std::cout << "3228 zone_id: " << nr_zones["3228"] << std::endl;
-	std::cout << "3225 zone_id: " << nr_zones["3225"] << std::endl;
+	std::cout << "3228 zone_id: " << node_zones["3228"] << std::endl;
+	std::cout << "3225 zone_id: " << node_zones["3225"] << std::endl;
 #endif
+    size_t node_count = node_vertices.size();
 
-#if OUTLAND
-    size_t node_count = ol_vertices.size();
-#else
-    size_t node_count = nr_vertices.size();
-#endif
     std::cout << "Looping all nodes... Nodes: " << node_count << std::endl;
     g.setPrint(false);
     bool links_to_all = true;
     int loop_counter = 0;
 
-#if OUTLAND
-    for (auto& node_pair : ol_vertices) {
-#else
-    for (auto& node_pair : nr_vertices) {
-#endif
+    for (auto& node_pair : node_vertices) {
         int node_id = std::stoi(node_pair.first);
 
-#if OUTLAND
-        for (auto& other_node_pair : ol_vertices) {
-#else
-        for (auto& other_node_pair : nr_vertices) {
-#endif
+        for (auto& other_node_pair : node_vertices) {
             int other_node_id = std::stoi(other_node_pair.first);
 
             if (node_id != other_node_id) {
-			// Only search nodes from the same zone. Doesn't quite work since zones aren't checked in DFS_search...
-#if OUTLAND
-			//if (node_id != other_node_id && ol_zones[to_string(node_id)] == ol_zones[to_string(other_node_id)]) {
-#else
-			//if (node_id != other_node_id && nr_zones[to_string(node_id)] == nr_zones[to_string(other_node_id)]) {
-#endif
                 bool can_reach = g.DFS_search(node_id, other_node_id);
-#if OUTLAND
-                //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, ol_zones);
-#else
-                //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, nr_zones);
-#endif
+			// Only search nodes from the same zone
+			//if (node_id != other_node_id && node_zones[to_string(node_id)] == node_zones[to_string(other_node_id)]) {
+                //bool can_reach = g.DFS_search_same_zone(node_id, other_node_id, node_zones);
+
                 loop_counter++;
 				// For printing
 				//if (loop_counter % 300 == 0) g.setPrint(true);

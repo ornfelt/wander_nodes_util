@@ -762,9 +762,6 @@ function show(data)
   {
     document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
   }
-  
-  // Always outland (1) / northrend (2)
-  switchworld(2);
 }
 
 function statusController(status_process_id,diff)
