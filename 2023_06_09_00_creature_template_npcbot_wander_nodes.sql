@@ -3287,8 +3287,8 @@ INSERT INTO `creature_template_npcbot_wander_nodes`(`id`,`name`,`mapid`,`zoneid`
 (3008,'K31',571,67,4418,77,80,1,6118.66,-1019.04,409.06,2.28,'3010:0 3005:0 3007:0 3002:0 '), -- Neutral spawn CS fork (3002)
 (3009,'CrystalwebCavern1',571,67,4462,77,80,0,6688.91,-1005.64,414.84,0.42,'3010:0 '),
 (3010,'SnowblindHills3',571,67,4419,77,80,0,6325.82,-1055.84,414.75,2.2,'3008:0 3007:0 3009:0 3011:0 '),
-(3011,'Garm1',571,67,4421,77,80,0,6306.3,-1548.87,423.9,0.85,'3012:0 3013:0 3010:0 '),
--- (3011,'Garm1',571,67,4421,77,80,0,6306.3,-1548.87,423.9,0.85,'3012:0 3013:0 3010:0 3027:0 '),
+-- (3011,'Garm1',571,67,4421,77,80,0,6306.3,-1548.87,423.9,0.85,'3012:0 3013:0 3010:0 '),
+(3011,'Garm1',571,67,4421,77,80,0,6306.3,-1548.87,423.9,0.85,'3012:0 3013:0 3010:0 3027:0 '), -- 3011 -> 3027 isn't optimal, but can be set to make all nodes reachable from every other.
 (3012,'GarmsRise1',571,67,4461,77,80,0,6315.66,-1754.94,456.99,0.53,'3011:0 '),
 (3013,'Garm2',571,67,4421,77,80,1,6493.3,-1642.87,428.41,0.71,'3011:0 '),
 (3014,'TheFootSteppes1',571,67,4432,77,80,0,7410.96,-1230.62,902.84,2.95,'3020:0 3015:0 3023:0 '),
@@ -3647,8 +3647,8 @@ INSERT INTO `creature_template_npcbot_wander_nodes`(`id`,`name`,`mapid`,`zoneid`
 -- Two new Blade's edge nodes
 DELETE FROM `creature_template_npcbot_wander_nodes` WHERE `id` IN (3354, 3355);
 INSERT INTO `creature_template_npcbot_wander_nodes`(`id`,`name`,`mapid`,`zoneid`,`areaid`,`minlevel`,`maxlevel`,`flags`,`x`,`y`,`z`,`o`,`links`) VALUES
-(3354,'BladesEdgeMountains3',530,3522,3522,65,68,0,1565.86,6055.12,125.95,3.1,'2614:0 2615:0 '),
-(3355,'BladesEdgeMountains4',530,3522,3522,65,68,0,1258.11,6976.70,87.53,3.50,'2647:0 2648:0 ');
+-- (3354,'BladesEdgeMountains3',530,3522,3522,65,68,0,1565.86,6055.12,125.95,3.1,'2614:0 2615:0 '),
+-- (3355,'BladesEdgeMountains4',530,3522,3522,65,68,0,1258.11,6976.70,87.53,3.50,'2647:0 2648:0 ');
 -- Update existing links:
 UPDATE `creature_template_npcbot_wander_nodes` SET `links`='2613:0 3354:0 ' WHERE (`id`='2614');
 UPDATE `creature_template_npcbot_wander_nodes` SET `links`='2616:0 3354:0 ' WHERE (`id`='2615');
