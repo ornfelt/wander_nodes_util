@@ -61,6 +61,4 @@ The notebook also contains scripts for generating SQL entries based on gm-logs, 
 
 wander_nodes.txt includes Azeroth wander nodes (created by [Trickerer](https://github.com/trickerer))
 
-2023_04_25_00_outland_complete.sql includes my SQL entries for Outland
-
-2023_04_25_00_outland_complete.sql includes my SQL entries for Northrend
+2023_06_09_00_creature_template_npcbot_wander_nodes.sql includes my SQL entries for Outland and Northrend
