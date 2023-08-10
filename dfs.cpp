@@ -10,6 +10,8 @@
 #define OUTLAND 1
 #define TRICKERER_SQL 1
 
+// Compile with: g++ -O2 -Wall dfs.cpp o dfs
+
 std::vector<std::string> read_lines_from_file(const std::string& filename) {
     std::vector<std::string> lines;
     std::ifstream file(filename);
@@ -35,7 +37,6 @@ private:
 public:
     std::unordered_map<int, std::unordered_set<int>> found_targets;
     bool should_print = false;
-    int used_found_targets_count = 0;
 
     void addEdge(const int& u, const int& v) {
         graph[u].push_back(v);
