@@ -17,14 +17,14 @@ The interactive maps showcased below can be used directly through the included H
 ## Northrend:
 ![Bot map Northrend](./images/botmap_northrend.gif?raw=true "Bot map Northrend")
 
-## Hover to see bot info:
+## Hover to see bot info (click to pipe ".npcb go XXXXX" into clipboard):
 ![Bot map hover](./images/botmap_hover.png?raw=true "Bot map hover")
 
 # Interactive wander nodes map
 
 ## Interaction:
 
-The wander node maps (see html-files) are generated using pyvis, so you can interact with the nodes by dragging them around or zooming to get a closer look. The nodes are directed and you can see the corresponding ID's if you zoom in.
+The wander node maps (see HTML files) are generated using pyvis. You can interact with the nodes by dragging them around or zooming to get a closer look. The nodes are directed and you can see the corresponding ID's if you zoom in.
 
 Example of enlarged view of Shadowmoon Valley / Terokkar Forest:
 
