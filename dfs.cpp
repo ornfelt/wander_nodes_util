@@ -7,10 +7,7 @@
 #include <regex>
 #include <assert.h>
 
-#define OUTLAND 1
-#define TRICKERER_SQL 1
-
-// Compile with: g++ -O2 -Wall dfs.cpp o dfs
+// Compile with: g++ -O2 -Wall dfs.cpp -o dfs
 
 std::vector<std::string> read_lines_from_file(const std::string& filename) {
     std::vector<std::string> lines;
@@ -25,6 +22,29 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
     }
     return lines;
 }
+
+// Settings and global vars
+
+#define OUTLAND 1
+#define TRICKERER_SQL 1
+
+#if OUTLAND
+    const std::string node_map_id = "530";
+#else
+    const std::string node_map_id = "571";
+#endif
+
+#if TRICKERER_SQL
+    std::vector<std::string> node_lines = read_lines_from_file("trickerer_outland_northrend.sql");
+#else
+    std::vector<std::string> node_lines = read_lines_from_file("2023_06_09_00_creature_template_npcbot_wander_nodes.sql");
+#endif
+
+std::unordered_map<int, int> node_zones;
+std::array<int, 2> isolated_zones {141, 1657};
+std::unordered_map<int, std::vector<int>> node_vertices;
+
+// Graph class
 
 class Graph {
 private:
@@ -113,21 +133,6 @@ std::string extract_index(const std::string& input, const char sep, const int id
 }
 
 int main() {
-#if TRICKERER_SQL
-    std::vector<std::string> node_lines = read_lines_from_file("trickerer_outland_northrend.sql");
-    //std::vector<std::string> node_lines = read_lines_from_file("testing.sql");
-#else
-    std::vector<std::string> node_lines = read_lines_from_file("2023_06_09_00_creature_template_npcbot_wander_nodes.sql");
-#endif
-
-#if OUTLAND
-    const std::string node_map_id = "530";
-#else
-    const std::string node_map_id = "571";
-#endif
-
-    std::unordered_map<int, std::vector<int>> node_vertices;
-    std::unordered_map<int, int> node_zones;
     // Loop nodes
     for (const std::string& line : node_lines) {
         if (!line.empty() && line[0] == '(') {

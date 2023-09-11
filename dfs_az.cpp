@@ -9,8 +9,6 @@
 
 // Compile with: g++ -O2 -Wall dfs_az.cpp -o dfs_az
 
-#define KALIMDOR 0
-
 std::vector<std::string> read_lines_from_file(const std::string& filename) {
     std::vector<std::string> lines;
     std::ifstream file(filename);
@@ -25,17 +23,26 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
     return lines;
 }
 
-std::unordered_map<int, int> node_zones;
-std::array<int, 2> isolated_zones {141, 1657};
-template<class C, typename T>
-bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
+// Settings and global vars
 
-std::vector<std::string> node_lines = read_lines_from_file("2023_04_04_00_creature_template_npcbot_wander_nodes.sql");
+#define KALIMDOR 0
+
 #if KALIMDOR
     const std::string node_map_id = "1";
 #else
     const std::string node_map_id = "0";
 #endif
+
+template<class C, typename T>
+bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
+
+std::vector<std::string> node_lines = read_lines_from_file("2023_04_04_00_creature_template_npcbot_wander_nodes.sql");
+
+std::unordered_map<int, int> node_zones;
+std::array<int, 2> isolated_zones {141, 1657};
+std::unordered_map<int, std::vector<int>> node_vertices;
+
+// Graph class
 
 class Graph {
 private:
@@ -124,7 +131,6 @@ std::string extract_index(const std::string& input, const char sep, const int id
 }
 
 int main() {
-    std::unordered_map<int, std::vector<int>> node_vertices;
     // Loop nodes
     for (const std::string& line : node_lines) {
         if (!line.empty() && line[0] == '(') {
@@ -197,9 +203,9 @@ int main() {
         int node_id = entry.first;
         for (const auto& other_entry : node_vertices) {
             int other_node_id = other_entry.first;
-            // If the zone is isolated (like Teldrassil) only check nodes with same zone
-            // Scenarios: if node_id is on teldrassil, then other_node_id must have same zone.
-            // If other_node_id is on isolated, then node_id must have the same zone
+            // If the zone is isolated (like Teldrassil) only check nodes with same zone:
+            // If node_id is on teldrassil, then other_node_id must have same zone.
+            // If other_node_id is on isolated, then node_id must have the same zone.
             bool trying_to_reach_isolated = (contains(isolated_zones, node_zones[node_id]) || 
                     (contains(isolated_zones, node_zones[other_node_id]))) && node_zones[node_id] != node_zones[other_node_id];
             if (trying_to_reach_isolated)
