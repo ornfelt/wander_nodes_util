@@ -261,13 +261,21 @@ int main() {
     bool links_to_all = true;
     bool break_when_no_link = false;
     int loop_counter = 0;
+    int isolated_counter = 0;
     g.should_print = false;
 
     for (const auto& entry : node_vertices) {
         int node_id = entry.first;
         for (const auto& other_entry : node_vertices) {
             int other_node_id = other_entry.first;
-            if (node_id != other_node_id) {
+            // If the zone is isolated (like Teldrassil) only check nodes with same zone:
+            // If node_id is on teldrassil, then other_node_id must have same zone.
+            // If other_node_id is on isolated, then node_id must have the same zone.
+            bool trying_to_reach_isolated = (contains(isolated_zones, node_zones[node_id]) || 
+                    (contains(isolated_zones, node_zones[other_node_id]))) && node_zones[node_id] != node_zones[other_node_id];
+            if (trying_to_reach_isolated)
+                isolated_counter++;
+            if (node_id != other_node_id && !trying_to_reach_isolated) {
                 bool can_reach = g.DFS_search(node_id, other_node_id);
                 loop_counter++;
 				//if (loop_counter % 300 == 0) g.should_print = true;
@@ -276,11 +284,12 @@ int main() {
                     std::cout << "CAN'T REACH: " << other_node_id << " (zone: " << node_zones[other_node_id] << 
                         ") FROM NODE: " << node_id << " (zone: " << node_zones[node_id] << ")" << std::endl;
                     links_to_all = false;
-                    break;
+                    if (break_when_no_link)
+                        break;
                 }
             }
         }
-        if (!links_to_all)
+        if (!links_to_all && break_when_no_link)
             break;
     }
 

@@ -37,6 +37,7 @@ template<class C, typename T>
 bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
 
 std::vector<std::string> node_lines = read_lines_from_file("2023_04_04_00_creature_template_npcbot_wander_nodes.sql");
+
 std::unordered_map<int, int> node_zones;
 std::array<int, 2> isolated_zones {141, 1657};
 std::unordered_map<int, std::vector<int>> node_vertices;
