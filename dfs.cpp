@@ -34,6 +34,9 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
     const std::string node_map_id = "571";
 #endif
 
+template<class C, typename T>
+bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
+
 #if TRICKERER_SQL
     std::vector<std::string> node_lines = read_lines_from_file("trickerer_outland_northrend.sql");
 #else
@@ -256,6 +259,7 @@ int main() {
     size_t node_count = node_vertices.size();
     std::cout << "Looping all nodes... Nodes: " << node_count << std::endl;
     bool links_to_all = true;
+    bool break_when_no_link = false;
     int loop_counter = 0;
     g.should_print = false;
 
@@ -269,7 +273,8 @@ int main() {
 				//if (loop_counter % 300 == 0) g.should_print = true;
 				//else g.should_print = false;
                 if (!can_reach) {
-                    std::cout << "CAN'T REACH: " << other_node_id << " FROM NODE: " << node_id << std::endl;
+                    std::cout << "CAN'T REACH: " << other_node_id << " (zone: " << node_zones[other_node_id] << 
+                        ") FROM NODE: " << node_id << " (zone: " << node_zones[node_id] << ")" << std::endl;
                     links_to_all = false;
                     break;
                 }
@@ -279,7 +284,7 @@ int main() {
             break;
     }
 
-    std::cout << "Done checking links... loop_counter: " << loop_counter << " - should be " 
+    std::cout << "Done checking links... Nodes checked: " << loop_counter + isolated_counter << " - should be " 
         << node_count << " * " << node_count - 1 << " = " << 
         node_count * (node_count - 1) << std::endl;
 
