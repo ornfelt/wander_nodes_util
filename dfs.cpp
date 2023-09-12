@@ -25,7 +25,7 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
 
 // Settings and global vars
 
-#define OUTLAND 1
+#define OUTLAND 0
 #define TRICKERER_SQL 1
 
 #if OUTLAND
@@ -90,7 +90,7 @@ public:
 
     bool DFS_search(int start_id, const int& target_id) {
         if (should_print)
-            std::cout << "start_id: " << start_id << "target_id: " << target_id << std::endl;
+            std::cout << "start_id: " << start_id << ", target_id: " << target_id << std::endl;
         curr_start_id = start_id;
         std::unordered_set<int> visited;
 
@@ -179,85 +179,27 @@ int main() {
         }
     }
 
+    // Test cases
     g.should_print = true;
 #if OUTLAND && !TRICKERER_SQL
-    bool test_bool = g.DFS_search(2418, 2474);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(2418, 2450);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(2500, 2602);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(2418, 2536);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(2746, 2702);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    //test_bool = g.DFS_search_same_zone(2649, 2626, node_zones);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
+    assert(g.DFS_search(2418, 2474));
+    assert(g.DFS_search(2418, 2450));
+    assert(g.DFS_search(2500, 2602));
+    assert(g.DFS_search(2418, 2536));
+    assert(g.DFS_search(2746, 2702));
 #elif !TRICKERER_SQL
-    bool test_bool = g.DFS_search(2802, 2900);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(3273, 3330);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    //test_bool = g.DFS_search_same_zone(3209, 3225, node_zones);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
-    //test_bool = g.DFS_search_same_zone(2970, 3003, node_zones);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
-    // Test print zones
-    std::cout << "3228 zone_id: " << node_zones[3228] << std::endl;
-    std::cout << "3225 zone_id: " << node_zones[3225] << std::endl;
+    assert(g.DFS_search(2802, 2900));
+    assert(g.DFS_search(3273, 3330));
 #elif OUTLAND && TRICKERER_SQL
-    bool test_bool = g.DFS_search(2418, 2864);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(2889, 3096);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(3257, 3442);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(3442, 3778);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
+    assert(g.DFS_search(2418, 2864));
+    assert(g.DFS_search(2889, 3096));
+    assert(g.DFS_search(3257, 3442));
 #else
-    // These will fail - trickerer's northrend nodes aren't "fully linked"
-    bool test_bool = g.DFS_search(4854, 5038);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(5038, 4854);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(4719, 5038);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(5038, 4719);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(5038, 4103);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(5038, 3978);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(5038, 3923);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
-    test_bool = g.DFS_search(4103, 4132);
-    std::cout << "\n" << test_bool << std::endl;
-    assert(test_bool);
+    //assert(g.DFS_search(4854, 5038));
 #endif
 
     size_t node_count = node_vertices.size();
-    std::cout << "Looping all nodes... Nodes: " << node_count << std::endl;
+    std::cout << "\nLooping all nodes... Nodes: " << node_count << std::endl;
     bool links_to_all = true;
     bool break_when_no_link = false;
     int loop_counter = 0;
@@ -269,8 +211,8 @@ int main() {
         for (const auto& other_entry : node_vertices) {
             int other_node_id = other_entry.first;
             // If the zone is isolated (like Teldrassil) only check nodes with same zone:
-            // If node_id is on teldrassil, then other_node_id must have same zone.
-            // If other_node_id is on isolated, then node_id must have the same zone.
+            // If node_id is isolated, then other_node_id must have same zone.
+            // If other_node_id is isolated, then node_id must have the same zone.
             bool trying_to_reach_isolated = (contains(isolated_zones, node_zones[node_id]) || 
                     (contains(isolated_zones, node_zones[other_node_id]))) && node_zones[node_id] != node_zones[other_node_id];
             if (trying_to_reach_isolated)

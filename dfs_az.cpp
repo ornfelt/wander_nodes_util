@@ -25,7 +25,7 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
 
 // Settings and global vars
 
-#define KALIMDOR 0
+#define KALIMDOR 1
 
 #if KALIMDOR
     const std::string node_map_id = "1";
@@ -85,7 +85,7 @@ public:
 
     bool DFS_search(int start_id, const int& target_id) {
         if (should_print)
-            std::cout << "start_id: " << start_id << "target_id: " << target_id << std::endl;
+            std::cout << "start_id: " << start_id << ", target_id: " << target_id << std::endl;
         curr_start_id = start_id;
         std::unordered_set<int> visited;
 
@@ -174,25 +174,20 @@ int main() {
         }
     }
 
+    // Test cases
     g.should_print = true;
 #if KALIMDOR
-    //bool test_bool = g.DFS_search(2418, 2474);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
-    //test_bool = g.DFS_search(2418, 2450);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
+    assert(g.DFS_search(2111, 2300));
+    assert(g.DFS_search(188, 1207));
+    assert(g.DFS_search(2079, 114));
 #else
-    //bool test_bool = g.DFS_search(4854, 5038);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
-    //test_bool = g.DFS_search(5038, 4854);
-    //std::cout << "\n" << test_bool << std::endl;
-    //assert(test_bool);
+    assert(g.DFS_search(1, 2));
+    assert(g.DFS_search(3, 2369));
+    assert(g.DFS_search(807, 618));
 #endif
 
     size_t node_count = node_vertices.size();
-    std::cout << "Looping all nodes... Nodes: " << node_count << std::endl;
+    std::cout << "\nLooping all nodes... Nodes: " << node_count << std::endl;
     bool links_to_all = true;
     bool break_when_no_link = false;
     int loop_counter = 0;
@@ -204,8 +199,8 @@ int main() {
         for (const auto& other_entry : node_vertices) {
             int other_node_id = other_entry.first;
             // If the zone is isolated (like Teldrassil) only check nodes with same zone:
-            // If node_id is on teldrassil, then other_node_id must have same zone.
-            // If other_node_id is on isolated, then node_id must have the same zone.
+            // If node_id is isolated, then other_node_id must have same zone.
+            // If other_node_id is isolated, then node_id must have the same zone.
             bool trying_to_reach_isolated = (contains(isolated_zones, node_zones[node_id]) || 
                     (contains(isolated_zones, node_zones[other_node_id]))) && node_zones[node_id] != node_zones[other_node_id];
             if (trying_to_reach_isolated)
