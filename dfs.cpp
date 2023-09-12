@@ -9,6 +9,26 @@
 
 // Compile with: g++ -O2 -Wall dfs.cpp -o dfs
 
+// Forward declaration
+std::vector<std::string> read_lines_from_file(const std::string& filename);
+
+enum ContinentID {
+    EasternKingdoms = 0,
+    Kalimdor = 1,
+    Outland = 530,
+    Northrend = 571
+};
+
+// Settings and global vars
+#define TRICKERER_SQL 0 // Use Trickerer's Outland and Northrend SQL
+//ContinentID continent = EasternKingdoms;
+//ContinentID continent = Kalimdor;
+//ContinentID continent = Outland;
+ContinentID continent = Northrend;
+
+template<class C, typename T>
+bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
+
 std::vector<std::string> read_lines_from_file(const std::string& filename) {
     std::vector<std::string> lines;
     std::ifstream file(filename);
@@ -23,32 +43,7 @@ std::vector<std::string> read_lines_from_file(const std::string& filename) {
     return lines;
 }
 
-// Settings and global vars
-
-#define OUTLAND 0
-#define TRICKERER_SQL 1
-
-#if OUTLAND
-    const std::string node_map_id = "530";
-#else
-    const std::string node_map_id = "571";
-#endif
-
-template<class C, typename T>
-bool contains(C&& c, T e) { return std::find(begin(c), end(c), e) != end(c); };
-
-#if TRICKERER_SQL
-    std::vector<std::string> node_lines = read_lines_from_file("trickerer_outland_northrend.sql");
-#else
-    std::vector<std::string> node_lines = read_lines_from_file("2023_06_09_00_creature_template_npcbot_wander_nodes.sql");
-#endif
-
-std::unordered_map<int, int> node_zones;
-std::array<int, 2> isolated_zones {141, 1657};
-std::unordered_map<int, std::vector<int>> node_vertices;
-
 // Graph class
-
 class Graph {
 private:
     std::unordered_map<int, std::vector<int>> graph;
@@ -136,6 +131,21 @@ std::string extract_index(const std::string& input, const char sep, const int id
 }
 
 int main() {
+    std::string node_map_id = std::to_string(continent);
+    std::vector<std::string> node_lines;
+    std::unordered_map<int, int> node_zones;
+    std::array<int, 2> isolated_zones {141, 1657};
+    std::unordered_map<int, std::vector<int>> node_vertices;
+
+    if (continent < 2)
+        node_lines = read_lines_from_file("2023_04_04_00_creature_template_npcbot_wander_nodes.sql");
+    else
+#if TRICKERER_SQL
+        node_lines = read_lines_from_file("trickerer_outland_northrend.sql");
+#else
+        node_lines = read_lines_from_file("2023_06_09_00_creature_template_npcbot_wander_nodes.sql");
+#endif
+
     // Loop nodes
     for (const std::string& line : node_lines) {
         if (!line.empty() && line[0] == '(') {
