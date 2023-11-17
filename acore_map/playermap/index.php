@@ -5,6 +5,7 @@
 /* Execute python script to generate db entries of bots */
 //$command = escapeshellcmd('python ../player_characters/py_insert.py');
 //$output = shell_exec($command);
+$output = shell_exec("echo");
 
 require_once("defines.php");
 require_once("pomm_conf.php");
@@ -604,6 +605,7 @@ function show(data)
   az_player_count_h = 0;
   outland_player_count_h = 0;
   northrend_player_count_h = 0;
+  let starting_map = 0;
 
   while (i < data.length)
   {
@@ -613,7 +615,7 @@ function show(data)
     if (data[i].race==2 || data[i].race==5 || data[i].race==6 || data[i].race==8 || data[i].race==10)
     {
       faction = 1;
-      text_col='#D2321E';
+	  text_col='#D2321E';
       // HEHE: fix player count
       horde_players_online_count++;
       if (data[i].map == 530)
@@ -626,7 +628,8 @@ function show(data)
     else
     {
       faction = 0;
-      text_col='#0096BE';
+	  //text_col = data[i].name.includes('(') ? '#0096BE' : '#d6c104';
+	  text_col='#0096BE';
       // HEHE: fix player count
       ally_players_online_count++;
       if (data[i].map == 530)
@@ -636,6 +639,15 @@ function show(data)
       else
           az_player_count_a++;
     }
+	
+	if (!data[i].name.includes('(')) {
+		console.log("PLAYER IS IN MAP: " + data[i].map);
+		if (data[i].map === '530') {
+			starting_map = 1;
+		} else if (data[i].map === '571') {
+			starting_map = 2;
+		}
+	}
 
     // HEHE: fix player count
     if (data[i].map == 530)
@@ -675,6 +687,8 @@ function show(data)
       mpoints[point_count].map_id = data[i].map;
       mpoints[point_count].name = data[i].name;
       mpoints[point_count].zone = data[i].zone;
+	  mpoints[point_count].race = data[i].race;
+	  mpoints[point_count].gender = data[i].gender;
       mpoints[point_count].player = 1;
       mpoints[point_count].Extention = eval(data[i].Extention);
       if(in_array(data[i].map, maps_array))
@@ -717,16 +731,25 @@ function show(data)
     else if(mpoints[n].player > 1)
 		// HEHE: Add onclick
 		//groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
-      groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
+		groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
     else
     {
       if(mpoints[n].faction)
         point = "<?php echo $img_base ?>horde.gif";
       else
         point = "<?php echo $img_base ?>allia.gif";
-	// HEHE: Add onclick
-      //single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
-	  single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+		if (mpoints[n].name.includes('('))
+		{
+			// HEHE: Add onclick
+			//single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
+			single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+		}
+		else
+		{
+			// Show race gif instead of horde / allia gif for players
+			point = "<?php echo $img_base2; ?>" + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
+			single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+		}
     }
     n++;
   }
@@ -758,15 +781,15 @@ function show(data)
   horde_count[1] = outland_player_count_h;
   horde_count[2] = northrend_player_count_h;
 
-  //document.getElementById("server_info").innerHTML='online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+eval(total_players_count[0]+total_players_count[1])+'';
-  document.getElementById("server_info").innerHTML='online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+players_online_count+'';
+  //document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+eval(total_players_count[0]+total_players_count[1])+'';
+  document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+players_online_count+'';
 
   for(i = 0; i < maps_count; i++)
   {
     document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
   }
   // HEHE: Always outland (1) / northrend (2)
-  switchworld(1);
+  switchworld(starting_map);
 }
 
 function statusController(status_process_id,diff)

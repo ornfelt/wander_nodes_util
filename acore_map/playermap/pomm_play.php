@@ -59,10 +59,22 @@ for ($i = 0; $i < $maps_count; $i++) {
 $arr = array();
 $i=$maps_count;
 //$query = $characters_db->query("SELECT `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-//$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters_playermap` WHERE `online`='1' ORDER BY `name`");
+$query_players = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
+$query_bots = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters_playermap` WHERE `online`='1' ORDER BY `name`");
 
-while ($result = $characters_db->fetch_assoc($query)) {
+$results_players = [];
+while ($row = $characters_db->fetch_assoc($query_players)) {
+    $results_players[] = $row;
+}
+$results_bots = [];
+while ($row = $characters_db->fetch_assoc($query_bots)) {
+    $results_bots[] = $row;
+}
+// Merge the results
+$mergedResults = array_merge($results_players, $results_bots);
+
+//while ($result = $characters_db->fetch_assoc($query)) {
+foreach ($mergedResults as $result) {
     if ($result['map'] == 530 && $result['position_y'] > -1000 || in_array($result['map'], $outland_inst)) {
         $Extention = 1;
     } elseif ($result['map'] == 571 || in_array($result['map'], $northrend_inst)) {
@@ -73,7 +85,9 @@ while ($result = $characters_db->fetch_assoc($query)) {
 
     $gm_player = false;
     $show_player = true;
-	$result['name'] = $result['name']." (".$result['guid'].")";
+	if ($result['guid'] > 70000) {
+		$result['name'] = $result['name']." (".$result['guid'].")";
+	}
 	
     if (in_array($result['account'], $gm_accounts)) {
         $gm_player = true;
