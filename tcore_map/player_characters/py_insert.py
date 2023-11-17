@@ -15,8 +15,8 @@ server_path = "/home/jonas/tcore_relwithdebinfo/bin"
 
 mydb = mysql.connector.connect(
   host="localhost",
-  user="trinity",
-  password="trinity",
+  user="acore",
+  password="acore",
   database="player_characters"
 )
 

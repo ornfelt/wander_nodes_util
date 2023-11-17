@@ -25,8 +25,8 @@ mycursor = mydb.cursor()
 mycursor.execute("SELECT * FROM characters_playermap")
 myresult = mycursor.fetchall()
 
-for x in myresult:
-  print(x)
+#for x in myresult:
+#  print(x)
 
 print("-----------------------------------------")
 # Clean db
