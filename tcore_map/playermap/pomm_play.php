@@ -87,10 +87,10 @@ foreach ($mergedResults as $result) {
 
     $gm_player = false;
     $show_player = true;
-	if ($result['guid'] > 70000) {
-		$result['name'] = $result['name']." (".$result['guid'].")";
-	}
-	
+    if ($result['guid'] > 70000) {
+        $result['name'] = $result['name']." (".$result['guid'].")";
+    }
+
     if (in_array($result['account'], $gm_accounts)) {
         $gm_player = true;
         $show_player = false;
@@ -104,9 +104,9 @@ foreach ($mergedResults as $result) {
             }
             if ($gm_add_suffix && $show_player) {
                 //$result['name'] = $result['name'].' <small style="color: #EABA28;">{GM}</small>';
-				//$result['name'] .= " (".$result['guid'].")";
-				
-				//$result['name'] = $result['name']." (".$result['guid'].")";
+                //$result['name'] .= " (".$result['guid'].")";
+
+                //$result['name'] = $result['name']." (".$result['guid'].")";
             }
         }
     }

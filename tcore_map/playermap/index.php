@@ -218,11 +218,11 @@ var maps_array = new Array(<?php echo $maps_for_points ?>);
 var maps_name_array = new Array(<?php echo "'".implode("','", $lang_defs['maps_names'])."'" ?>);
 
 var race_name = {<?php echo "0:''"; foreach ($character_race as $id => $race) {
-    echo(", ".$id.":'".$race."'");
+echo(", ".$id.":'".$race."'");
 } ?>}
 
 var class_name = {<?php echo "0:''"; foreach ($character_class as $id => $class) {
-    echo(", ".$id.":'".$class."'");
+echo(", ".$id.":'".$class."'");
 } ?>}
 
 var instances_x = new Array();
@@ -246,753 +246,753 @@ var pointy;
 
 function _status_action(text,status_data,text_type,action,time)
 {
-  this.text_id = text;
-  this.status_data = status_data;
-  this.text_type = text_type;
-  this.action = action;
-  this.time = time;
+    this.text_id = text;
+    this.status_data = status_data;
+    this.text_type = text_type;
+    this.action = action;
+    this.time = time;
 }
 
 function _coord()
 {
-  this.x = 0;
-  this.y = 0;
+    this.x = 0;
+    this.y = 0;
 }
 
 function _points() {
-  this.map_id = 0;
-  this.x = 0;
-  this.y = 0;
-  this.name = "";
-  this.zone = "";
-  this.faction = 0;
-  this.single_text = "";
-  this.multi_text = "";
-  this.player = 0;
-  this.Extention = 0;
+    this.map_id = 0;
+    this.x = 0;
+    this.y = 0;
+    this.name = "";
+    this.zone = "";
+    this.faction = 0;
+    this.single_text = "";
+    this.multi_text = "";
+    this.player = 0;
+    this.Extention = 0;
 }
 
 function _multi_text() {
-  this.current = 0;
-  this.next = 0;
-  this.first_members = Array();
-  this.text = Array();
+    this.current = 0;
+    this.next = 0;
+    this.first_members = Array();
+    this.text = Array();
 }
 
 function _pos() {
-  this.x = 0;
-  this.y = 0;
+    this.x = 0;
+    this.y = 0;
 }
 
 function getBodyScrollTop()
 {
-  return self.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop);
+    return self.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop);
 }
 
 function getBodyScrollLeft()
 {
-  return self.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft);
+    return self.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft);
 }
 
 function get_tipxy(tip_width, tip_height, x1, y1)
 {
-  tipxy = new _coord();
-  tipxy.x = 5;
-  tipxy.y = 5;
-  if(document.layers)
-  {
-    wd = innerWidth;
-    ht = innerHeight;
-  }
-  else
-  {
-    wd = document.body.clientWidth;
-    ht = document.body.clientHeight;
-  }
-  if(x1+tip_width+15 < wd)
-    tipxy.x = x1+15;
-  else if(x1-tip_width-15 > 0)
-    tipxy.x = x1-tip_width-15;
-  else
-    tipxy.x = wd/2-tip_width/2;
-  if(y1+tip_height-5 < ht)
-    tipxy.y = y1-5;
-  else if(ht-tip_height-5 > 0)
-    tipxy.y = ht-tip_height-5;
-  else
+    tipxy = new _coord();
+    tipxy.x = 5;
     tipxy.y = 5;
-  //tipxy.x += getBodyScrollLeft();
-  //tipxy.y += getBodyScrollTop();
-  return tipxy;
+    if(document.layers)
+    {
+        wd = innerWidth;
+        ht = innerHeight;
+    }
+    else
+    {
+        wd = document.body.clientWidth;
+        ht = document.body.clientHeight;
+    }
+    if(x1+tip_width+15 < wd)
+        tipxy.x = x1+15;
+    else if(x1-tip_width-15 > 0)
+        tipxy.x = x1-tip_width-15;
+    else
+        tipxy.x = wd/2-tip_width/2;
+    if(y1+tip_height-5 < ht)
+        tipxy.y = y1-5;
+    else if(ht-tip_height-5 > 0)
+        tipxy.y = ht-tip_height-5;
+    else
+        tipxy.y = 5;
+    //tipxy.x += getBodyScrollLeft();
+    //tipxy.y += getBodyScrollTop();
+    return tipxy;
 }
 
 function getMultiText(multitext, onClick)
 {
-  if(onClick)
-  {
-    multitext.current = multitext.next;
-  }
-  if(document.layers)
-  {
-    ht = innerHeight;
-  }
-  else
-  {
-    ht = document.body.clientHeight;
-  }
-  var length = multitext.text.length - multitext.current;
-  count = length;
-  if((20+length*22) > ht*0.8)
-  {
-    count = Math.round((ht*0.8 - 20)/22);
-    multitext.next = multitext.current + count;
-    if(multitext.next == multitext.text.length)
-      multitext.next = 0;
-  }
-  else
-    multitext.next = 0;
-  var data = '';
-  var i = 0;
-  while(i < count)
-  {
-    if(in_array(multitext.current + i, multitext.first_members))
-      group_line = '<tr\><td colspan=\'7\' bgcolor=\'#11FF99\' height=\'1px\'\></td\></tr\>';
+    if(onClick)
+    {
+        multitext.current = multitext.next;
+    }
+    if(document.layers)
+    {
+        ht = innerHeight;
+    }
     else
-      group_line = '';
-    data += group_line + '<tr class=\'tip_text\'><td align=\'left\'\>&nbsp;'+eval(multitext.current + i + 1)+'&nbsp;</td\>'+multitext.text[multitext.current + i]+'</tr\>';
-    i++;
-  }
-  if(multitext.next > multitext.current)
-    data += '<tr class=\'tip_text\'><td align=\'right\' colspan=\'7\'\>>>>&nbsp;<?php echo $lang_defs['click_to_next'];?>&nbsp;>>>&nbsp;</td\></tr\>';
-  else if(multitext.current > 0)
-    data += '<tr class=\'tip_text\'><td align=\'left\' colspan=\'7\'\>&nbsp;<<<&nbsp;<?php echo $lang_defs['click_to_first'];?>&nbsp;<<<</td\></tr\>';
-  return data;
+    {
+        ht = document.body.clientHeight;
+    }
+    var length = multitext.text.length - multitext.current;
+    count = length;
+    if((20+length*22) > ht*0.8)
+    {
+        count = Math.round((ht*0.8 - 20)/22);
+        multitext.next = multitext.current + count;
+        if(multitext.next == multitext.text.length)
+            multitext.next = 0;
+    }
+    else
+        multitext.next = 0;
+    var data = '';
+    var i = 0;
+    while(i < count)
+    {
+        if(in_array(multitext.current + i, multitext.first_members))
+            group_line = '<tr\><td colspan=\'7\' bgcolor=\'#11FF99\' height=\'1px\'\></td\></tr\>';
+        else
+            group_line = '';
+        data += group_line + '<tr class=\'tip_text\'><td align=\'left\'\>&nbsp;'+eval(multitext.current + i + 1)+'&nbsp;</td\>'+multitext.text[multitext.current + i]+'</tr\>';
+        i++;
+    }
+    if(multitext.next > multitext.current)
+        data += '<tr class=\'tip_text\'><td align=\'right\' colspan=\'7\'\>>>>&nbsp;<?php echo $lang_defs['click_to_next'];?>&nbsp;>>>&nbsp;</td\></tr\>';
+    else if(multitext.current > 0)
+        data += '<tr class=\'tip_text\'><td align=\'left\' colspan=\'7\'\>&nbsp;<<<&nbsp;<?php echo $lang_defs['click_to_first'];?>&nbsp;<<<</td\></tr\>';
+    return data;
 }
 
 function tip(object, type, onClick)
 {
-  var t, data;
-  var tipxy;
-  t=document.getElementById("tip");
-  if(window.opera)
-  {
-    pointx = window.event.clientX;
-    pointy = window.event.clientY;
-  }
-  else if(navigator.appName != "Netscape")
-  {
-    pointx = window.event.clientX + document.documentElement.scrollLeft + document.body.scrollLeft;
-    pointy = window.event.clientY + document.documentElement.scrollTop + document.body.scrollTop;
-  }
-  switch(type)
-  {
+    var t, data;
+    var tipxy;
+    t=document.getElementById("tip");
+    if(window.opera)
+    {
+        pointx = window.event.clientX;
+        pointy = window.event.clientY;
+    }
+    else if(navigator.appName != "Netscape")
+    {
+        pointx = window.event.clientX + document.documentElement.scrollLeft + document.body.scrollLeft;
+        pointy = window.event.clientY + document.documentElement.scrollTop + document.body.scrollTop;
+    }
+    switch(type)
+    {
     case 2:
-      tipxy = new _coord();
-      tipxy.x = pointx+15;
-      tipxy.y = pointy-60;
-      t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class=\'tip_worldinfo\'\>'+object+'</table\>';
-      break;
+        tipxy = new _coord();
+        tipxy.x = pointx+15;
+        tipxy.y = pointy-60;
+        t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class=\'tip_worldinfo\'\>'+object+'</table\>';
+        break;
     case 1:
-      if(onClick || t.innerHTML == '')
-      {
-        data = getMultiText(object.multi_text, onClick);
-        t.innerHTML='<table border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_header\'\><td colspan=\'7\'\>'+object.zone+'</td\></tr\><tr class=\'tip_head_text\'\><td align=\'center\'\>#</td\><td\>&nbsp;<?php echo $lang_defs['name'];?></td\><td width=\'25\' align=\'center\'\><?php echo $lang_defs['level'];?></td\><td colspan=\'2\'\><?php echo $lang_defs['race'];?></td\><td colspan=\'2\'\>&nbsp;<?php echo $lang_defs['class'];?></td\></tr\>'+data+'<\/table\>';
-      }
-      tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
-      break;
+        if(onClick || t.innerHTML == '')
+        {
+            data = getMultiText(object.multi_text, onClick);
+            t.innerHTML='<table border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_header\'\><td colspan=\'7\'\>'+object.zone+'</td\></tr\><tr class=\'tip_head_text\'\><td align=\'center\'\>#</td\><td\>&nbsp;<?php echo $lang_defs['name'];?></td\><td width=\'25\' align=\'center\'\><?php echo $lang_defs['level'];?></td\><td colspan=\'2\'\><?php echo $lang_defs['race'];?></td\><td colspan=\'2\'\>&nbsp;<?php echo $lang_defs['class'];?></td\></tr\>'+data+'<\/table\>';
+        }
+        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+        break;
     case 0:
-      if(object.faction) {color='#D2321E';}
-      else {color='#0096BE';}
-      t.innerHTML='<table width=\'100\' border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_text\'\><td\>&nbsp;'+object.name+'&nbsp;</td\></tr\><tr bgcolor=\''+color+'\'\><td height=\'1px\'\></td\></tr\><tr\><td\><table width=100% border=\'0\' cellspacing=\'0\' cellpadding=\'3\'\><tr class=\'tip_text\'\><td\>'+object.single_text+'</td\></tr\><\/table\></td\></tr\><\/table\>';
-      tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
-      break;
-  }
-  t.style.left=tipxy.x + "px";
-  t.style.top=tipxy.y + "px";
+        if(object.faction) {color='#D2321E';}
+        else {color='#0096BE';}
+        t.innerHTML='<table width=\'100\' border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_text\'\><td\>&nbsp;'+object.name+'&nbsp;</td\></tr\><tr bgcolor=\''+color+'\'\><td height=\'1px\'\></td\></tr\><tr\><td\><table width=100% border=\'0\' cellspacing=\'0\' cellpadding=\'3\'\><tr class=\'tip_text\'\><td\>'+object.single_text+'</td\></tr\><\/table\></td\></tr\><\/table\>';
+        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+        break;
+    }
+    t.style.left=tipxy.x + "px";
+    t.style.top=tipxy.y + "px";
 }
 
 function h_tip() {
-  var t;
-  t=document.getElementById("tip");
-  t.innerHTML="";
-  t.style.left="-1000px";
-  t.style.top="-1000px";
+    var t;
+    t=document.getElementById("tip");
+    t.innerHTML="";
+    t.style.left="-1000px";
+    t.style.top="-1000px";
 }
 
 function get_player_position(x,y,m)
 {
- pos = new _pos();
- where_530 = 0;
- x = Math.round(x);
- y = Math.round(y);
- if(m == 530) {
-   if(y < -1000 && y > -10000 && x > 5000) { //BE
-     x=x-10349; y=y+6357; where_530 = 1;
-     }
-   else if(y < -7000 && x < 0) {             //Dr
-     x=x+3961; y=y+13931; where_530 = 2;
-     }
-   else {                                    //Outland
-     x=x-3070; y=y-1265; where_530 = 3;
-     }
-   }
- else if(m == 609) {
-   x=x-2355; y=y+5662;
-   }
- if(where_530 == 3) { //Outland
-   xpos = Math.round(x * 0.051446);
-   ypos = Math.round(y * 0.051446);
-   }
- else if(m == 571) { //Northrend
-   xpos = Math.round(x * 0.050085);
-   ypos = Math.round(y * 0.050085);
-   }
- else {              //Azeroth
-   xpos = Math.round(x * 0.025140);
-   ypos = Math.round(y * 0.025140);
-   }
- switch (m) {
-   case '530':
-    if(where_530 == 1) {
-      pos.x = 858 - ypos; pos.y = 84 - xpos;
-      }
-    else if(where_530 == 2) {
-      pos.x = 103 - ypos; pos.y = 261 - xpos;
-      }
-    else if(where_530 == 3) {
-      pos.x = 684 - ypos; pos.y = 229 - xpos;
-      }
-    break;
-   case '571':
-    pos.x = 505 - ypos;
-    pos.y = 642 - xpos;
-    break;
-   case '609':
-    pos.x = 896 - ypos;
-    pos.y = 232 - xpos;
-    break;
-   case '1':
-    pos.x = 194 - ypos;
-    pos.y = 398 - xpos;
-    break;
-   case '0':
-    pos.x = 752 - ypos;
-    pos.y = 291 - xpos;
-    break;
-   default:
-    pos.x = 194 - ypos;
-    pos.y = 398 - xpos;
- }
- return pos;
+    pos = new _pos();
+    where_530 = 0;
+    x = Math.round(x);
+    y = Math.round(y);
+    if(m == 530) {
+        if(y < -1000 && y > -10000 && x > 5000) { //BE
+            x=x-10349; y=y+6357; where_530 = 1;
+        }
+        else if(y < -7000 && x < 0) {             //Dr
+            x=x+3961; y=y+13931; where_530 = 2;
+        }
+        else {                                    //Outland
+            x=x-3070; y=y-1265; where_530 = 3;
+        }
+    }
+    else if(m == 609) {
+        x=x-2355; y=y+5662;
+    }
+    if(where_530 == 3) { //Outland
+        xpos = Math.round(x * 0.051446);
+        ypos = Math.round(y * 0.051446);
+    }
+    else if(m == 571) { //Northrend
+        xpos = Math.round(x * 0.050085);
+        ypos = Math.round(y * 0.050085);
+    }
+    else {              //Azeroth
+        xpos = Math.round(x * 0.025140);
+        ypos = Math.round(y * 0.025140);
+    }
+    switch (m) {
+    case '530':
+        if(where_530 == 1) {
+            pos.x = 858 - ypos; pos.y = 84 - xpos;
+        }
+        else if(where_530 == 2) {
+            pos.x = 103 - ypos; pos.y = 261 - xpos;
+        }
+        else if(where_530 == 3) {
+            pos.x = 684 - ypos; pos.y = 229 - xpos;
+        }
+        break;
+    case '571':
+        pos.x = 505 - ypos;
+        pos.y = 642 - xpos;
+        break;
+    case '609':
+        pos.x = 896 - ypos;
+        pos.y = 232 - xpos;
+        break;
+    case '1':
+        pos.x = 194 - ypos;
+        pos.y = 398 - xpos;
+        break;
+    case '0':
+        pos.x = 752 - ypos;
+        pos.y = 291 - xpos;
+        break;
+    default:
+        pos.x = 194 - ypos;
+        pos.y = 398 - xpos;
+    }
+    return pos;
 }
 
 function in_array(value, arr)
 {
-  var i = 0;
-  while (i < arr.length)
-  {
-    if(value == arr[i])
-      return true;
-    i++;
-  }
-  return false;
+    var i = 0;
+    while (i < arr.length)
+    {
+        if(value == arr[i])
+            return true;
+        i++;
+    }
+    return false;
 }
 
 function getMapLayerByID(id)
 {
-  switch(id)
-  {
+    switch(id)
+    {
     case 0:
-      return document.getElementById("world"); break;
+        return document.getElementById("world"); break;
     case 1:
-      return document.getElementById("outland"); break;
+        return document.getElementById("outland"); break;
     case 2:
-      return document.getElementById("northrend"); break;
+        return document.getElementById("northrend"); break;
     default:
-      return null;
-  }
+        return null;
+    }
 }
 
 function getPointsLayerByID(id)
 {
-  switch(id)
-  {
+    switch(id)
+    {
     case 0:
-      return document.getElementById("pointsOldworld"); break;
+        return document.getElementById("pointsOldworld"); break;
     case 1:
-      return document.getElementById("pointsOutland"); break;
+        return document.getElementById("pointsOutland"); break;
     case 2:
-      return document.getElementById("pointsNorthrend"); break;
+        return document.getElementById("pointsNorthrend"); break;
     default:
-      return null;
-  }
+        return null;
+    }
 }
 
 function switchworld(n)
 {
-  for(var i = 0; i < maps_count; i++)
-  {
-    obj_map_layer = getMapLayerByID(i);
-    obj_points_layer = getPointsLayerByID(i);
+    for(var i = 0; i < maps_count; i++)
+    {
+        obj_map_layer = getMapLayerByID(i);
+        obj_points_layer = getPointsLayerByID(i);
 
-    if(i == n)
-    {
-      obj_map_layer.style.visibility = "visible";
-      obj_points_layer.style.visibility = "visible";
+        if(i == n)
+        {
+            obj_map_layer.style.visibility = "visible";
+            obj_points_layer.style.visibility = "visible";
+        }
+        else
+        {
+            obj_map_layer.style.visibility = "hidden";
+            obj_points_layer.style.visibility = "hidden";
+        }
     }
-    else
-    {
-      obj_map_layer.style.visibility = "hidden";
-      obj_points_layer.style.visibility = "hidden";
-    }
-  }
 }
 
 
 function show(data)
 {
-  if(!data)
-  {
-    var object;
+    if(!data)
+    {
+        var object;
+        for(var i = 0; i < maps_count; i++)
+        {
+            object = getPointsLayerByID(i);
+            object.innerHTML = '';
+        }
+        document.getElementById("server_info").innerHTML = '';
+        return;
+    }
+
+    mpoints = new Array();
+    instances = new Array();
+    groups = new Array();
+    single = new Array();
+    points_layer = new Array();
+    alliance_count = new Array();
+    horde_count = new Array();
+
     for(var i = 0; i < maps_count; i++)
     {
-      object = getPointsLayerByID(i);
-      object.innerHTML = '';
+        instances[i] = '';
+        groups[i] = '';
+        single[i] = '';
+        alliance_count[i] = eval(data[i][0]);
+        horde_count[i] = eval(data[i][1]);
     }
-    document.getElementById("server_info").innerHTML = '';
-    return;
-  }
 
-  mpoints = new Array();
-  instances = new Array();
-  groups = new Array();
-  single = new Array();
-  points_layer = new Array();
-  alliance_count = new Array();
-  horde_count = new Array();
-
-  for(var i = 0; i < maps_count; i++)
-  {
-    instances[i] = '';
-    groups[i] = '';
-    single[i] = '';
-    alliance_count[i] = eval(data[i][0]);
-    horde_count[i] = eval(data[i][1]);
-  }
-
-  point_count=0;
-  var ht;
-  if(document.layers)
-  {
-    ht = innerHeight;
-  }
-  else
-  {
-    ht = document.body.clientHeight;
-  }
-  group_line = '';
-  i = maps_count;
-
-  // HEHE: fix player and map count
-  players_online_count = 0;
-  ally_players_online_count = 0;
-  horde_players_online_count = 0;
-  az_player_count = 0;
-  outland_player_count = 0;
-  northrend_player_count = 0;
-  az_player_count_a = 0;
-  outland_player_count_a = 0;
-  northrend_player_count_a = 0;
-  az_player_count_h = 0;
-  outland_player_count_h = 0;
-  northrend_player_count_h = 0;
-  let starting_map = 0;
-
-  while (i < data.length)
-  {
-    // HEHE: fix player count
-    players_online_count++;
-
-    if (data[i].race==2 || data[i].race==5 || data[i].race==6 || data[i].race==8 || data[i].race==10)
+    point_count=0;
+    var ht;
+    if(document.layers)
     {
-      faction = 1;
-      text_col='#D2321E';
-      // HEHE: fix player count
-      horde_players_online_count++;
-      if (data[i].map == 530)
-          outland_player_count_h++;
-      else if (data[i].map == 571)
-          northrend_player_count_h++;
-      else
-          az_player_count_h++;
+        ht = innerHeight;
     }
     else
     {
-      faction = 0;
-      text_col='#0096BE';
-      // HEHE: fix player count
-      ally_players_online_count++;
-      if (data[i].map == 530)
-          outland_player_count_a++;
-      else if (data[i].map == 571)
-          northrend_player_count_a++;
-      else
-          az_player_count_a++;
+        ht = document.body.clientHeight;
     }
-	
-	if (!data[i].name.includes('(')) {
-		console.log("PLAYER IS IN MAP: " + data[i].map);
-		if (data[i].map === '530') {
-			starting_map = 1;
-		} else if (data[i].map === '571') {
-			starting_map = 2;
-		}
-	}
+    group_line = '';
+    i = maps_count;
 
-    // HEHE: fix player count
-    if (data[i].map == 530)
-        outland_player_count++;
-    else if (data[i].map == 571)
-        northrend_player_count++;
-    else
-        az_player_count++;
+    // HEHE: fix player and map count
+    players_online_count = 0;
+    ally_players_online_count = 0;
+    horde_players_online_count = 0;
+    az_player_count = 0;
+    outland_player_count = 0;
+    northrend_player_count = 0;
+    az_player_count_a = 0;
+    outland_player_count_a = 0;
+    northrend_player_count_a = 0;
+    az_player_count_h = 0;
+    outland_player_count_h = 0;
+    northrend_player_count_h = 0;
+    let starting_map = 0;
 
-    if(data[i].dead == 1)
-      char = '<img src=\'<?php echo $img_base ?>dead.gif\' style=\'float:center\' border=0 width=18 height=18\>';
-    else
-      char = '<img src=\'<?php echo $img_base2 ?>'+data[i].race+'-'+data[i].gender+'.gif\' style=\'float:center\' border=0 width=18 height=18\>';
+    while (i < data.length)
+    {
+        // HEHE: fix player count
+        players_online_count++;
+
+        if (data[i].race==2 || data[i].race==5 || data[i].race==6 || data[i].race==8 || data[i].race==10)
+        {
+            faction = 1;
+            text_col='#D2321E';
+            // HEHE: fix player count
+            horde_players_online_count++;
+            if (data[i].map == 530)
+                outland_player_count_h++;
+            else if (data[i].map == 571)
+                northrend_player_count_h++;
+            else
+                az_player_count_h++;
+        }
+        else
+        {
+            faction = 0;
+            text_col='#0096BE';
+            // HEHE: fix player count
+            ally_players_online_count++;
+            if (data[i].map == 530)
+                outland_player_count_a++;
+            else if (data[i].map == 571)
+                northrend_player_count_a++;
+            else
+                az_player_count_a++;
+        }
+
+        if (!data[i].name.includes('(')) {
+            console.log("PLAYER IS IN MAP: " + data[i].map);
+            if (data[i].map === '530') {
+                starting_map = 1;
+            } else if (data[i].map === '571') {
+                starting_map = 2;
+            }
+        }
+
+        // HEHE: fix player count
+        if (data[i].map == 530)
+            outland_player_count++;
+        else if (data[i].map == 571)
+            northrend_player_count++;
+        else
+            az_player_count++;
+
+        if(data[i].dead == 1)
+            char = '<img src=\'<?php echo $img_base ?>dead.gif\' style=\'float:center\' border=0 width=18 height=18\>';
+        else
+            char = '<img src=\'<?php echo $img_base2 ?>'+data[i].race+'-'+data[i].gender+'.gif\' style=\'float:center\' border=0 width=18 height=18\>';
+        n=0;
+        if(in_array(data[i].map, maps_array))
+        {
+            pos = get_player_position(data[i].x,data[i].y,data[i].map);
+            while(n != point_count)
+            {
+                if(data[i].map == mpoints[n].map_id && Math.sqrt(Math.pow(pos.x-mpoints[n].x,2)+Math.pow(pos.y-mpoints[n].y,2)) < 3)
+                    break;
+                n++;
+            }
+        }
+        else
+        {
+            while(n != point_count)
+            {
+                if(mpoints[n].map_id == data[i].map)
+                    break;
+                n++;
+            }
+        }
+        if(n == point_count)
+        {
+            mpoints[n] = new _points();
+            mpoints[point_count].map_id = data[i].map;
+            mpoints[point_count].name = data[i].name;
+            mpoints[point_count].zone = data[i].zone;
+            mpoints[point_count].race = data[i].race;
+            mpoints[point_count].gender = data[i].gender;
+            mpoints[point_count].player = 1;
+            mpoints[point_count].Extention = eval(data[i].Extention);
+            if(in_array(data[i].map, maps_array))
+            {
+                mpoints[n].faction = faction;
+                mpoints[point_count].single_text = data[i].zone+'<br\>'+data[i].level+' lvl<br\>'+char+'&nbsp;<img src=\'<?php echo $img_base2 ?>'+data[i].cl+'.gif\' style=\'float:center\' border=0 width=18 height=18\><br\>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
+                mpoints[point_count].x = pos.x;
+                mpoints[point_count].y = pos.y;
+            }
+            else
+            {
+                mpoints[point_count].single_text='';
+                mpoints[point_count].x = 0;
+                mpoints[point_count].y = 0;
+            }
+            mpoints[point_count].current_leaderGuid = data[i].leaderGuid;
+            mpoints[point_count].multi_text = new _multi_text();
+            n = point_count;
+            point_count++;
+        }
+        else
+        {
+            mpoints[n].player += 1;
+            mpoints[n].single_text = '';
+        }
+        if(!in_array(mpoints[n].map_id, maps_array) && (mpoints[n].current_leaderGuid != data[i].leaderGuid || (data[i].leaderGuid == 0 && mpoints[n].player > 1)))
+        {
+            mpoints[n].multi_text.first_members.push(mpoints[n].player-1);
+            mpoints[n].current_leaderGuid = data[i].leaderGuid;
+        }
+        mpoints[n].multi_text.text[mpoints[n].player-1] = '<td align=\'left\' valign=\'middle\'\>&nbsp;'+data[i].name+'</td\><td\>'+data[i].level+'</td\><td align=\'left\'\>'+char+'</td\><td align=\'left\'\ style=\'color: '+text_col+';\'>&nbsp;'+race_name[data[i].race]+'</td\><td align=\'left\'\>&nbsp;<img src=\'<?php echo $img_base2 ?>'+data[i].cl+'.gif\' style=\'float:center\' border=0 width=18 height=18\></td\><td align=\'left\'\>&nbsp;'+class_name[data[i].cl]+'&nbsp;</td\>';
+        i++;
+    }
+
     n=0;
-    if(in_array(data[i].map, maps_array))
+    while(n!=point_count)
     {
-      pos = get_player_position(data[i].x,data[i].y,data[i].map);
-      while(n != point_count)
-      {
-        if(data[i].map == mpoints[n].map_id && Math.sqrt(Math.pow(pos.x-mpoints[n].x,2)+Math.pow(pos.y-mpoints[n].y,2)) < 3)
-          break;
+        if(!in_array(mpoints[n].map_id, maps_array))
+            instances[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
+        else if(mpoints[n].player > 1)
+            // HEHE: Add onclick
+            //groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
+            groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
+        else
+        {
+            if(mpoints[n].faction)
+                point = "<?php echo $img_base ?>horde.gif";
+            else
+                point = "<?php echo $img_base ?>allia.gif";
+            if (mpoints[n].name.includes('('))
+            {
+                // HEHE: Add onclick
+                //single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
+                single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+            }
+            else
+            {
+                // Show race gif instead of horde / allia gif for players
+                point = "<?php echo $img_base2; ?>" + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
+                single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+            }
+        }
         n++;
-      }
     }
-    else
+
+    players_count = Array(0);
+    total_players_count = new Array(0,0);
+
+    for(i = 0; i < maps_count; i++)
     {
-      while(n != point_count)
-      {
-        if(mpoints[n].map_id == data[i].map)
-          break;
-        n++;
-      }
+        obj = getPointsLayerByID(i);
+        obj.innerHTML = instances[i] + single[i] + groups[i];
+        players_count[i] = alliance_count[i] + horde_count[i];
+        total_players_count[0] += alliance_count[i];
+        total_players_count[1] += horde_count[i];
     }
-    if(n == point_count)
+
+    // HEHE: Fix player count
+    total_players_count[0] = ally_players_online_count;
+    total_players_count[1] = horde_players_online_count;
+    players_count[0] = az_player_count;
+    players_count[1] = outland_player_count;
+    players_count[2] = northrend_player_count;
+    console.log("az player count: " + az_player_count + ", outland: " + outland_player_count, "nothrend: " + northrend_player_count);
+
+    alliance_count[0] = az_player_count_a;
+    alliance_count[1] = outland_player_count_a;
+    alliance_count[2] = northrend_player_count_a;
+    horde_count[0] = az_player_count_h;
+    horde_count[1] = outland_player_count_h;
+    horde_count[2] = northrend_player_count_h;
+
+    //document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+eval(total_players_count[0]+total_players_count[1])+'';
+    document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+players_online_count+'';
+
+    for(i = 0; i < maps_count; i++)
     {
-      mpoints[n] = new _points();
-      mpoints[point_count].map_id = data[i].map;
-      mpoints[point_count].name = data[i].name;
-      mpoints[point_count].zone = data[i].zone;
-	  mpoints[point_count].race = data[i].race;
-	  mpoints[point_count].gender = data[i].gender;
-      mpoints[point_count].player = 1;
-      mpoints[point_count].Extention = eval(data[i].Extention);
-      if(in_array(data[i].map, maps_array))
-      {
-        mpoints[n].faction = faction;
-        mpoints[point_count].single_text = data[i].zone+'<br\>'+data[i].level+' lvl<br\>'+char+'&nbsp;<img src=\'<?php echo $img_base2 ?>'+data[i].cl+'.gif\' style=\'float:center\' border=0 width=18 height=18\><br\>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
-        mpoints[point_count].x = pos.x;
-        mpoints[point_count].y = pos.y;
-      }
-      else
-      {
-        mpoints[point_count].single_text='';
-        mpoints[point_count].x = 0;
-        mpoints[point_count].y = 0;
-      }
-      mpoints[point_count].current_leaderGuid = data[i].leaderGuid;
-      mpoints[point_count].multi_text = new _multi_text();
-      n = point_count;
-      point_count++;
+        document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
     }
-    else
-    {
-      mpoints[n].player += 1;
-      mpoints[n].single_text = '';
-    }
-    if(!in_array(mpoints[n].map_id, maps_array) && (mpoints[n].current_leaderGuid != data[i].leaderGuid || (data[i].leaderGuid == 0 && mpoints[n].player > 1)))
-    {
-      mpoints[n].multi_text.first_members.push(mpoints[n].player-1);
-      mpoints[n].current_leaderGuid = data[i].leaderGuid;
-    }
-    mpoints[n].multi_text.text[mpoints[n].player-1] = '<td align=\'left\' valign=\'middle\'\>&nbsp;'+data[i].name+'</td\><td\>'+data[i].level+'</td\><td align=\'left\'\>'+char+'</td\><td align=\'left\'\ style=\'color: '+text_col+';\'>&nbsp;'+race_name[data[i].race]+'</td\><td align=\'left\'\>&nbsp;<img src=\'<?php echo $img_base2 ?>'+data[i].cl+'.gif\' style=\'float:center\' border=0 width=18 height=18\></td\><td align=\'left\'\>&nbsp;'+class_name[data[i].cl]+'&nbsp;</td\>';
-    i++;
-  }
-
-  n=0;
-  while(n!=point_count)
-  {
-    if(!in_array(mpoints[n].map_id, maps_array))
-      instances[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
-    else if(mpoints[n].player > 1)
-		// HEHE: Add onclick
-		//groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
-		groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
-    else
-    {
-      if(mpoints[n].faction)
-        point = "<?php echo $img_base ?>horde.gif";
-      else
-        point = "<?php echo $img_base ?>allia.gif";
-		if (mpoints[n].name.includes('('))
-		{
-			// HEHE: Add onclick
-			//single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
-			single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
-		}
-		else
-		{
-			// Show race gif instead of horde / allia gif for players
-			point = "<?php echo $img_base2; ?>" + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-			single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
-		}
-    }
-    n++;
-  }
-
-  players_count = Array(0);
-  total_players_count = new Array(0,0);
-
-  for(i = 0; i < maps_count; i++)
-  {
-    obj = getPointsLayerByID(i);
-    obj.innerHTML = instances[i] + single[i] + groups[i];
-    players_count[i] = alliance_count[i] + horde_count[i];
-    total_players_count[0] += alliance_count[i];
-    total_players_count[1] += horde_count[i];
-  }
-
-  // HEHE: Fix player count
-  total_players_count[0] = ally_players_online_count;
-  total_players_count[1] = horde_players_online_count;
-  players_count[0] = az_player_count;
-  players_count[1] = outland_player_count;
-  players_count[2] = northrend_player_count;
-  console.log("az player count: " + az_player_count + ", outland: " + outland_player_count, "nothrend: " + northrend_player_count);
-
-  alliance_count[0] = az_player_count_a;
-  alliance_count[1] = outland_player_count_a;
-  alliance_count[2] = northrend_player_count_a;
-  horde_count[0] = az_player_count_h;
-  horde_count[1] = outland_player_count_h;
-  horde_count[2] = northrend_player_count_h;
-
-  //document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+eval(total_players_count[0]+total_players_count[1])+'';
-  document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+total_players_count[1]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+total_players_count[0]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();"><?php echo $lang_defs['total']; ?></b> '+players_online_count+'';
-
-  for(i = 0; i < maps_count; i++)
-  {
-    document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
-  }
-  // HEHE: Always outland (1) / northrend (2)
-  switchworld(starting_map);
+    // HEHE: Always outland (1) / northrend (2)
+    switchworld(starting_map);
 }
 
 function statusController(status_process_id,diff)
 {
-  var action = status_process[status_process_id].action;
-  if(action)
-  {
-    var obj = document.getElementById("status");
-    var text_type = status_process[status_process_id].text_type;
-    if(text_type == 0)
+    var action = status_process[status_process_id].action;
+    if(action)
     {
-      var status_process_now = new Date();
-      var status_process_diff = status_process_now.getTime() - status_process_started.getTime();
-      var objDate = new Date(status_data[status_process[status_process_id].status_data]*1000 + status_process_diff);
-      var days = parseInt(status_data[status_process[status_process_id].status_data]/86400);
-      var hours = objDate.getUTCHours();
-      var min = objDate.getUTCMinutes();
-      var sec = objDate.getUTCSeconds();
-      if(hours < 10) hours = '0'+hours;
-      if(min < 10) min = '0'+min;
-      if(sec < 10) sec = '0'+sec;
-      if(days) days = days+' '; else days = '';
-      obj.innerHTML = status_text[status_process[status_process_id].text_id]+' - '+days+''+hours+':'+min+':'+sec;
-    }
-    else if(text_type == 1)
-    {
-      obj.innerHTML = status_text[status_process[status_process_id].text_id]+' - '+status_data[status_process[status_process_id].status_data];
-    }
-    else
-      obj.innerHTML = status_text[status_process[status_process_id].text_id];
-    switch(action)
-    {
-      case 1:
-        if(fade_cur_color > 0)
+        var obj = document.getElementById("status");
+        var text_type = status_process[status_process_id].text_type;
+        if(text_type == 0)
         {
-          fade_cur_color--;
-          obj.style.color = '#'+fade_colors[fade_cur_color];
+            var status_process_now = new Date();
+            var status_process_diff = status_process_now.getTime() - status_process_started.getTime();
+            var objDate = new Date(status_data[status_process[status_process_id].status_data]*1000 + status_process_diff);
+            var days = parseInt(status_data[status_process[status_process_id].status_data]/86400);
+            var hours = objDate.getUTCHours();
+            var min = objDate.getUTCMinutes();
+            var sec = objDate.getUTCSeconds();
+            if(hours < 10) hours = '0'+hours;
+            if(min < 10) min = '0'+min;
+            if(sec < 10) sec = '0'+sec;
+            if(days) days = days+' '; else days = '';
+            obj.innerHTML = status_text[status_process[status_process_id].text_id]+' - '+days+''+hours+':'+min+':'+sec;
         }
-        break;
-      case 2:
-        if(fade_cur_color < (fade_colors.length-1))
+        else if(text_type == 1)
         {
-          fade_cur_color++;
-          obj.style.color = '#'+fade_colors[fade_cur_color];
+            obj.innerHTML = status_text[status_process[status_process_id].text_id]+' - '+status_data[status_process[status_process_id].status_data];
         }
-        break;
+        else
+            obj.innerHTML = status_text[status_process[status_process_id].text_id];
+        switch(action)
+        {
+        case 1:
+            if(fade_cur_color > 0)
+            {
+                fade_cur_color--;
+                obj.style.color = '#'+fade_colors[fade_cur_color];
+            }
+            break;
+        case 2:
+            if(fade_cur_color < (fade_colors.length-1))
+            {
+                fade_cur_color++;
+                obj.style.color = '#'+fade_colors[fade_cur_color];
+            }
+            break;
+        }
     }
-  }
-  status_cur_time += diff;
-  if(status_next_process || status_cur_time >= status_process[status_process_id].time)
-  {
-    if(status_next_process)
-      status_cur_time = statusUpdateInterval*fade_colors.length;
-    else
-      status_cur_time = 0;
-    do
+    status_cur_time += diff;
+    if(status_next_process || status_cur_time >= status_process[status_process_id].time)
     {
-      status_process_id++;
+        if(status_next_process)
+            status_cur_time = statusUpdateInterval*fade_colors.length;
+        else
+            status_cur_time = 0;
+        do
+        {
+            status_process_id++;
 
-      if(status_process_id >= (status_process.length))
-        status_process_id = 0;
-    } while(status_next_process && status_process[status_process_id].action == 2);
-    status_next_process = 0;
-  }
-  setTimeout('statusController('+status_process_id+','+statusUpdateInterval+')', statusUpdateInterval);
+            if(status_process_id >= (status_process.length))
+                status_process_id = 0;
+        } while(status_next_process && status_process[status_process_id].action == 2);
+        status_next_process = 0;
+    }
+    setTimeout('statusController('+status_process_id+','+statusUpdateInterval+')', statusUpdateInterval);
 }
 
 function showNextStatusText()
 {
-  if(status_process.length > 2)
-    status_next_process = 1;
+    if(status_process.length > 2)
+        status_next_process = 1;
 }
 
 function statusInit()
 {
-  var blinkTime = statusUpdateInterval*fade_colors.length;
-  var time_to_show_uptime = <?php echo $time_to_show_uptime ?>;
-  var time_to_show_maxonline = <?php echo $time_to_show_maxonline ?>;
-  var time_to_show_gmonline = <?php echo $time_to_show_gmonline ?>;
+    var blinkTime = statusUpdateInterval*fade_colors.length;
+    var time_to_show_uptime = <?php echo $time_to_show_uptime ?>;
+    var time_to_show_maxonline = <?php echo $time_to_show_maxonline ?>;
+    var time_to_show_gmonline = <?php echo $time_to_show_gmonline ?>;
 
-  // for first time
-  if(status_process.length == 0)
-    setTimeout('statusController(0,'+statusUpdateInterval+')', statusUpdateInterval);
+    // for first time
+    if(status_process.length == 0)
+        setTimeout('statusController(0,'+statusUpdateInterval+')', statusUpdateInterval);
 
-  status_process = new Array();
-  if(status_data[0] == 1) // online
-  {
-    if(time_to_show_uptime)
+    status_process = new Array();
+    if(status_data[0] == 1) // online
     {
-      status_process.push(new _status_action(2,1,0,1,time_to_show_uptime));
-      status_process.push(new _status_action(2,1,0,2,blinkTime));
-    }
-    if(time_to_show_maxonline)
-    {
-      status_process.push(new _status_action(3,2,1,1,time_to_show_maxonline));
-      status_process.push(new _status_action(3,2,1,2,blinkTime));
-    }
+        if(time_to_show_uptime)
+        {
+            status_process.push(new _status_action(2,1,0,1,time_to_show_uptime));
+            status_process.push(new _status_action(2,1,0,2,blinkTime));
+        }
+        if(time_to_show_maxonline)
+        {
+            status_process.push(new _status_action(3,2,1,1,time_to_show_maxonline));
+            status_process.push(new _status_action(3,2,1,2,blinkTime));
+        }
     /*
-    if(time_to_show_gmonline)
+        if(time_to_show_gmonline)
     {
       status_process.push(new _status_action(4,3,1,1,time_to_show_gmonline));
       status_process.push(new _status_action(4,3,1,2,blinkTime));
     } */
-  }
-  else if(status_data[0] == 0) // offline
-  {
-    status_process.push(new _status_action(0,0,2,1,blinkTime));
-    status_process.push(new _status_action(0,0,2,2,blinkTime));
-  }
-  else //DB connect error
-  {
-    status_process.push(new _status_action(1,0,2,1,blinkTime));
-    status_process.push(new _status_action(1,0,2,2,blinkTime));
-  }
+    }
+    else if(status_data[0] == 0) // offline
+    {
+        status_process.push(new _status_action(0,0,2,1,blinkTime));
+        status_process.push(new _status_action(0,0,2,2,blinkTime));
+    }
+    else //DB connect error
+    {
+        status_process.push(new _status_action(1,0,2,1,blinkTime));
+        status_process.push(new _status_action(1,0,2,2,blinkTime));
+    }
 }
 
 function load_data()
 {
-  var req = new Subsys_JsHttpRequest_Js();
-  req.onreadystatechange = function()
-  {
-    if (req.readyState == 4)
+    var req = new Subsys_JsHttpRequest_Js();
+    req.onreadystatechange = function()
     {
-      if(show_status)
-      {
-        if(req.responseJS.status)
+        if (req.readyState == 4)
         {
-          if(status_data[0] != req.responseJS.status.online)
-          {
-            status_data[0] = req.responseJS.status.online;
-            var obj = document.getElementById("statusIMG");
-            if(status_data[0] != 1)
+            if(show_status)
             {
-              obj.src = "<?php echo $img_base ?>realm_off.gif"
+                if(req.responseJS.status)
+                {
+                    if(status_data[0] != req.responseJS.status.online)
+                    {
+                        status_data[0] = req.responseJS.status.online;
+                        var obj = document.getElementById("statusIMG");
+                        if(status_data[0] != 1)
+                        {
+                            obj.src = "<?php echo $img_base ?>realm_off.gif"
+                        }
+                        else
+                            obj.src = "<?php echo $img_base ?>realm_on.gif"
+                    }
+                    if(req.responseJS.status.uptime < status_data[1] || status_data[1] == 0)
+                    {
+                        status_process_started = new Date();
+                        status_data[1] = req.responseJS.status.uptime;
+                    }
+                    status_data[2] = req.responseJS.status.maxplayers;
+                    status_data[3] = req.responseJS.status.gmonline;
+                    statusInit();
+                }
             }
-            else
-              obj.src = "<?php echo $img_base ?>realm_on.gif"
-          }
-          if(req.responseJS.status.uptime < status_data[1] || status_data[1] == 0)
-          {
-            status_process_started = new Date();
-            status_data[1] = req.responseJS.status.uptime;
-          }
-          status_data[2] = req.responseJS.status.maxplayers;
-          status_data[3] = req.responseJS.status.gmonline;
-          statusInit();
+            show(req.responseJS.online);
         }
-      }
-      show(req.responseJS.online);
     }
-  }
-  req.open('GET', 'pomm_play.php', true);
-  req.send({ });
+    req.open('GET', 'pomm_play.php', true);
+    req.send({ });
 }
 
 function reset()
 {
-  var ms = 0;
-  then = new Date();
-  then.setTime(then.getTime()-ms);
-  load_data();
+    var ms = 0;
+    then = new Date();
+    then.setTime(then.getTime()-ms);
+    load_data();
 }
 
 function display()
 {
-  now = new Date();
-  ms = now.getTime() - then.getTime();
-  ms = time*1000-ms;
-  if ((show_time==1) && (time!=0))
-  {
-    document.getElementById("timer").innerHTML=(Math.round(ms/1000));
-  }
-  if (ms<=0)
-  {
-    reset();
-  }
-  if (time!=0)
-  {
-    setTimeout("display();", 500);
-  }
+    now = new Date();
+    ms = now.getTime() - then.getTime();
+    ms = time*1000-ms;
+    if ((show_time==1) && (time!=0))
+    {
+        document.getElementById("timer").innerHTML=(Math.round(ms/1000));
+    }
+    if (ms<=0)
+    {
+        reset();
+    }
+    if (time!=0)
+    {
+        setTimeout("display();", 500);
+    }
 }
 
 function start()
 {
-  reset();
-  //display();
+    reset();
+    //display();
 
-  if(navigator.appName=="Netscape")
-  {
-    document.onmousemove=function(e)
+    if(navigator.appName=="Netscape")
     {
-      pointx = e.pageX;
-      pointy = e.pageY;
-      return true;
+        document.onmousemove=function(e)
+        {
+            pointx = e.pageX;
+            pointy = e.pageY;
+            return true;
+        }
     }
-  }
 
-  // HEHE: Update page every third min
-  setInterval(function() { window.location.reload(); }, 300000); 
-  // Update every min
-  //setInterval(function() { window.location.reload(); }, 60000); 
-  //setTimeout("window.open('http://YourPage.com', '_self');", 300000);
-  console.log("PAGE START");
+    // HEHE: Update page every third min
+    setInterval(function() { window.location.reload(); }, 300000); 
+    // Update every min
+    //setInterval(function() { window.location.reload(); }, 60000); 
+    //setTimeout("window.open('http://YourPage.com', '_self');", 300000);
+    console.log("PAGE START");
 
 }
 
@@ -1008,15 +1008,15 @@ function copy(text) {
 
 function onClickNode(e)
 {
-	var t, data;
-	t=document.getElementById("tip");
-	//console.log("TEST CLICK: " + e.target);
-	//console.log("TEST CLICK: " + t.innerHTML);
-	
-	const tip_split = t.innerHTML.split("(");
-	var copy_text = ".npcb go " + tip_split[1].split(")")[0];
-	console.log("COPYING TEXT: " + copy_text);
-	copy(copy_text);
+    var t, data;
+    t=document.getElementById("tip");
+    //console.log("TEST CLICK: " + e.target);
+    //console.log("TEST CLICK: " + t.innerHTML);
+
+    const tip_split = t.innerHTML.split("(");
+    var copy_text = ".npcb go " + tip_split[1].split(")")[0];
+    console.log("COPYING TEXT: " + copy_text);
+    copy(copy_text);
 }
 
 </SCRIPT>
