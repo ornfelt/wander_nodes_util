@@ -26,7 +26,7 @@ $realm_db->query("SET NAMES $database_encoding");
 
 $gm_online = 0;
 $gm_accounts = array();
-if ($server_type == 1) { // if AzerothCore/TrinityCore
+if ($server_type == 1) { // AzerothCore
     $query = $realm_db->query("SELECT GROUP_CONCAT(`id` SEPARATOR ' ') FROM `account_access` WHERE `gmlevel`>'0'");
 } else {
     $query = $realm_db->query("SELECT GROUP_CONCAT(`id` SEPARATOR ' ') FROM `account` WHERE `gmlevel`>'0'");

@@ -1,6 +1,8 @@
 <?php
 
-// Run with: php -S 127.0.0.1:8000
+// Run with either:
+// php -S 127.0.0.1:8000
+// php -S localhost:8000
 
 /* Execute python script to generate db entries of bots */
 //$command = escapeshellcmd('python ../player_characters/py_insert.py');
@@ -206,7 +208,6 @@ body {
 <SCRIPT TYPE="text/javascript">
 
 // Print output from python script (run from php script, see above)
-
 //console.log(<?= json_encode($output); ?>);
 
 var current_map = 0;
@@ -629,6 +630,7 @@ function show(data)
         else
         {
             faction = 0;
+            //text_col = data[i].name.includes('(') ? '#0096BE' : '#d6c104';
             text_col='#0096BE';
             // HEHE: fix player count
             ally_players_online_count++;
@@ -641,7 +643,7 @@ function show(data)
         }
 
         if (!data[i].name.includes('(')) {
-            console.log("PLAYER IS IN MAP: " + data[i].map);
+            console.log("Found player in map: " + data[i].map);
             if (data[i].map === '530') {
                 starting_map = 1;
             } else if (data[i].map === '571') {
@@ -992,8 +994,7 @@ function start()
     // Update every min
     //setInterval(function() { window.location.reload(); }, 60000); 
     //setTimeout("window.open('http://YourPage.com', '_self');", 300000);
-    console.log("PAGE START");
-
+    console.log("Starting TrinityCore playermap!");
 }
 
 function copy(text) {
@@ -1013,10 +1014,12 @@ function onClickNode(e)
     //console.log("TEST CLICK: " + e.target);
     //console.log("TEST CLICK: " + t.innerHTML);
 
-    const tip_split = t.innerHTML.split("(");
-    var copy_text = ".npcb go " + tip_split[1].split(")")[0];
-    console.log("COPYING TEXT: " + copy_text);
-    copy(copy_text);
+	if (t.innerHTML.includes('(')) {
+		const tip_split = t.innerHTML.split("(");
+		var copy_text = ".npcb go " + tip_split[1].split(")")[0];
+		console.log("COPYING TEXT: " + copy_text);
+		copy(copy_text);
+	}
 }
 
 </SCRIPT>

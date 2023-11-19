@@ -26,7 +26,7 @@ $realm_db->query("SET NAMES $database_encoding");
 
 $gm_online = 0;
 $gm_accounts = array();
-if ($server_type == 1) { // if AzerothCore/TrinityCore
+if ($server_type == 1) { // TrinityCore
     //$query = $realm_db->query("SELECT GROUP_CONCAT(`id` SEPARATOR ' ') FROM `account_access` WHERE `gmlevel`>'0'");
     $query = $realm_db->query("SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') FROM `account_access` WHERE `SecurityLevel`>'0'");
 } else {
@@ -60,7 +60,6 @@ for ($i = 0; $i < $maps_count; $i++) {
 $arr = array();
 $i=$maps_count;
 //$query = $characters_db->query("SELECT `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-//$query = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
 $query_players = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
 $query_bots = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters_playermap` WHERE `online`='1' ORDER BY `name`");
 
