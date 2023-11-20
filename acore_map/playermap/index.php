@@ -989,11 +989,11 @@ function start()
         }
     }
 
-    // HEHE: Update page every third min
-    setInterval(function() { window.location.reload(); }, 300000); 
+    // HEHE: Update page every 2nd min
+    setInterval(function() { window.location.reload(); }, 120000); 
     // Update every min
     //setInterval(function() { window.location.reload(); }, 60000); 
-    //setTimeout("window.open('http://YourPage.com', '_self');", 300000);
+    //setTimeout("window.open('http://YourPage.com', '_self');", 180000);
     console.log("Starting AzerothCore playermap!");
 }
 
