@@ -594,7 +594,7 @@ function show(data)
     group_line = '';
     i = maps_count;
 
-    // HEHE: fix player and map count
+    // Fix player and map count
     players_online_count = 0;
     ally_players_online_count = 0;
     horde_players_online_count = 0;
@@ -611,14 +611,14 @@ function show(data)
 
     while (i < data.length)
     {
-        // HEHE: fix player count
+        // Fix player count
         players_online_count++;
 
         if (data[i].race==2 || data[i].race==5 || data[i].race==6 || data[i].race==8 || data[i].race==10)
         {
             faction = 1;
             text_col='#D2321E';
-            // HEHE: fix player count
+            // Fix player count
             horde_players_online_count++;
             if (data[i].map == 530)
                 outland_player_count_h++;
@@ -632,7 +632,7 @@ function show(data)
             faction = 0;
             //text_col = data[i].name.includes('(') ? '#0096BE' : '#d6c104';
             text_col='#0096BE';
-            // HEHE: fix player count
+            // Fix player count
             ally_players_online_count++;
             if (data[i].map == 530)
                 outland_player_count_a++;
@@ -651,7 +651,7 @@ function show(data)
             }
         }
 
-        // HEHE: fix player count
+        // Fix player count
         if (data[i].map == 530)
             outland_player_count++;
         else if (data[i].map == 571)
@@ -731,7 +731,7 @@ function show(data)
         if(!in_array(mpoints[n].map_id, maps_array))
             instances[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
         else if(mpoints[n].player > 1)
-            // HEHE: Add onclick
+            // Add onclick
             //groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
             groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
         else
@@ -742,7 +742,7 @@ function show(data)
                 point = "<?php echo $img_base ?>allia.gif";
             if (mpoints[n].name.includes('('))
             {
-                // HEHE: Add onclick
+                // Add onclick
                 //single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
                 single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
             }
@@ -768,7 +768,7 @@ function show(data)
         total_players_count[1] += horde_count[i];
     }
 
-    // HEHE: Fix player count
+    // Fix player count
     total_players_count[0] = ally_players_online_count;
     total_players_count[1] = horde_players_online_count;
     players_count[0] = az_player_count;
@@ -790,7 +790,7 @@ function show(data)
     {
         document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
     }
-    // HEHE: Always outland (1) / northrend (2)
+    // Starting map to show: outland (1) / northrend (2)
     switchworld(starting_map);
 }
 
@@ -989,7 +989,7 @@ function start()
         }
     }
 
-    // HEHE: Update page every 2nd min
+    // Update page every 2nd min
     setInterval(function() { window.location.reload(); }, 120000); 
     // Update every min
     //setInterval(function() { window.location.reload(); }, 60000); 
