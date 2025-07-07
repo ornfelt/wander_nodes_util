@@ -13,6 +13,13 @@
             color: #EABA28;
             background-color: #000000;
         }
+        
+        /* Grid mode container to expand page height */
+        .grid-mode::after {
+            content: "";
+            display: block;
+            height: 200px;
+        }
         #world {
             position: absolute;
             height: 732px;
@@ -67,6 +74,91 @@
             left: 50%;
             margin-left: -483px;
             z-index: 98;
+        }
+        
+        /* Grid layout styles */
+        .grid-mode #world {
+            height: 732px;
+            width: 966px;
+            left: 50%;
+            margin-left: -483px;
+            top: 120px;
+            background-size: 966px 732px;
+        }
+        .grid-mode #outland {
+            height: 732px;
+            width: 966px;
+            left: 20%;
+            margin-left: -483px;
+            top: 870px;
+            background-size: 966px 732px;
+            visibility: visible !important;
+            z-index: 9;
+        }
+        .grid-mode #northrend {
+            height: 732px;
+            width: 966px;
+            left: 75%;
+            margin-left: -483px;
+            top: 870px;
+            background-size: 966px 732px;
+            visibility: visible !important;
+            z-index: 8;
+        }
+        .grid-mode #pointsOldworld {
+            height: 732px;
+            width: 966px;
+            left: 50%;
+            margin-left: -483px;
+            top: 120px;
+        }
+        .grid-mode #pointsOutland {
+            height: 732px;
+            width: 966px;
+            left: 20%;
+            margin-left: -483px;
+            top: 870px;
+            visibility: visible !important;
+            z-index: 150;
+            pointer-events: auto;
+        }
+        .grid-mode #pointsNorthrend {
+            height: 732px;
+            width: 966px;
+            left: 75%;
+            margin-left: -483px;
+            top: 870px;
+            visibility: visible !important;
+            z-index: 150;
+            pointer-events: auto;
+        }
+        
+        /* Grid mode adjustments for other elements */
+        .grid-mode #info_bottom {
+            margin-top: 1650px;
+            margin-bottom: 200px;
+            padding-bottom: 70px;
+        }
+        
+        /* Checkbox styling */
+        #gridToggle {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            z-index: 200;
+            color: #EABA28;
+            font-family: arial, helvetica, sans-serif;
+            font-size: 14px;
+        }
+        
+        #gridToggle input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+        
+        #gridToggle label {
+            cursor: pointer;
+            user-select: none;
         }
         #wow {
             position: absolute;
@@ -189,6 +281,11 @@
 </head>
 
 <body onload="start()">
+    <div id="gridToggle">
+        <input type="checkbox" id="gridModeCheckbox" onchange="toggleGridMode()">
+        <label for="gridModeCheckbox">Show All Maps</label>
+    </div>
+    
     <div onMouseDown="showNextStatusText();" id="serverstatus">
         <table align="center" border="0" cellspacing="0" cellpadding="0" width="156px" height="36px">
             <tr><td id="status" class="statustext"></td></tr>
@@ -312,18 +409,23 @@
                 wd = document.body.clientWidth;
                 ht = document.body.clientHeight;
             }
+            
+            // Position tooltip slightly above and to the right of mouse
             if(x1+tip_width+15 < wd)
                 tipxy.x = x1+15;
             else if(x1-tip_width-15 > 0)
                 tipxy.x = x1-tip_width-15;
             else
                 tipxy.x = wd/2-tip_width/2;
-            if(y1+tip_height-5 < ht)
-                tipxy.y = y1-5;
-            else if(ht-tip_height-5 > 0)
-                tipxy.y = ht-tip_height-5;
+                
+            // Always position above mouse cursor
+            if(y1-tip_height-10 > 0)
+                tipxy.y = y1-tip_height-10;
+            else if(y1+tip_height+10 < ht)
+                tipxy.y = y1+10;
             else
                 tipxy.y = 5;
+                
             return tipxy;
         }
 
@@ -366,18 +468,24 @@
             var t, data;
             var tipxy;
             t=document.getElementById("tip");
-            if(window.opera) {
-                pointx = window.event.clientX;
-                pointy = window.event.clientY;
-            } else if(navigator.appName != "Netscape") {
-                pointx = window.event.clientX + document.documentElement.scrollLeft + document.body.scrollLeft;
-                pointy = window.event.clientY + document.documentElement.scrollTop + document.body.scrollTop;
+            
+            // Get current mouse position more reliably
+            var mouseX, mouseY;
+            if(window.event) {
+                // For IE and others
+                mouseX = window.event.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft);
+                mouseY = window.event.clientY + (document.documentElement.scrollTop || document.body.scrollTop);
+            } else {
+                // Use stored coordinates from mouse move
+                mouseX = pointx || 0;
+                mouseY = pointy || 0;
             }
+            
             switch(type) {
             case 2:
                 tipxy = new _coord();
-                tipxy.x = pointx+15;
-                tipxy.y = pointy-60;
+                tipxy.x = mouseX + 15;
+                tipxy.y = mouseY - 60;
                 t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class="tip_worldinfo">'+object+'</table>';
                 break;
             case 1:
@@ -385,14 +493,14 @@
                     data = getMultiText(object.multi_text, onClick);
                     t.innerHTML='<table border="0" cellspacing="0" cellpadding="0"><tr class="tip_header"><td colspan="7">'+object.zone+'</td></tr><tr class="tip_head_text"><td align="center">#</td><td>&nbsp;{{ lang_defs.name }}</td><td width="25" align="center">{{ lang_defs.level }}</td><td colspan="2">{{ lang_defs.race }}</td><td colspan="2">&nbsp;{{ lang_defs.class }}</td></tr>'+data+'</table>';
                 }
-                tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+                tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, mouseX, mouseY);
                 break;
             case 0:
                 var color;
                 if(object.faction) {color='#D2321E';}
                 else {color='#0096BE';}
                 t.innerHTML='<table width="100" border="0" cellspacing="0" cellpadding="0"><tr class="tip_text"><td>&nbsp;'+object.name+'&nbsp;</td></tr><tr bgcolor="'+color+'"><td height="1px"></td></tr><tr><td><table width="100%" border="0" cellspacing="0" cellpadding="3"><tr class="tip_text"><td>'+object.single_text+'</td></tr></table></td></tr></table>';
-                tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+                tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, mouseX, mouseY);
                 break;
             }
             t.style.left=tipxy.x + "px";
@@ -504,6 +612,11 @@
         }
 
         function switchworld(n) {
+            // Don't switch maps if we're in grid mode
+            if (document.body.classList.contains('grid-mode')) {
+                return;
+            }
+            
             for(var i = 0; i < maps_count; i++) {
                 var obj_map_layer = getMapLayerByID(i);
                 var obj_points_layer = getPointsLayerByID(i);
@@ -516,6 +629,139 @@
                     obj_points_layer.style.visibility = "hidden";
                 }
             }
+        }
+
+        function toggleGridMode() {
+            var checkbox = document.getElementById('gridModeCheckbox');
+            var body = document.body;
+            
+            if (checkbox.checked) {
+                console.log("[js] Switching to grid mode");
+                body.classList.add('grid-mode');
+                // In grid mode, show all maps
+                for(var i = 0; i < maps_count; i++) {
+                    var obj_map_layer = getMapLayerByID(i);
+                    var obj_points_layer = getPointsLayerByID(i);
+                    obj_map_layer.style.visibility = "visible";
+                    obj_points_layer.style.visibility = "visible";
+                    
+                    // Debug: Log point layer properties
+                    console.log("[js] Point layer " + i + " visibility:", obj_points_layer.style.visibility);
+                    console.log("[js] Point layer " + i + " z-index:", window.getComputedStyle(obj_points_layer).zIndex);
+                }
+                // Regenerate points with grid positioning
+                regeneratePointsForGrid();
+            } else {
+                console.log("[js] Switching to single map mode");
+                body.classList.remove('grid-mode');
+                // Return to single map mode - show Azeroth by default
+                switchworld(0);
+                // Regenerate points with normal positioning
+                regeneratePointsForNormal();
+            }
+        }
+
+        // Store original point data for regeneration
+        var originalPointsData = null;
+
+        function regeneratePointsForGrid() {
+            if (!mpoints || mpoints.length === 0) return;
+            
+            // Clear existing points
+            for(var i = 0; i < maps_count; i++) {
+                var obj = getPointsLayerByID(i);
+                obj.innerHTML = '';
+            }
+            
+            var instances = ['', '', ''];
+            var groups = ['', '', ''];
+            var single = ['', '', ''];
+            
+            // Regenerate points with original positioning (CSS handles the grid offsets)
+            for(var n = 0; n < mpoints.length; n++) {
+                var point = mpoints[n];
+                
+                if(!in_array(point.map_id, maps_array)) {
+                    // Instance icons - use original positioning
+                    var instX = instances_x[point.Extention][point.map_id];
+                    var instY = instances_y[point.Extention][point.map_id];
+                    
+                    instances[point.Extention] += '<img src="{{ config.img_base }}inst-icon.gif" style="position: absolute; border: 0px; left: '+instX+'px; top: '+instY+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
+                } else {
+                    // Player/bot points - use original positions
+                    if(point.player > 1) {
+                        groups[point.Extention] += '<img src="{{ config.img_base }}group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                    } else {
+                        var pointImg;
+                        if(point.faction)
+                            pointImg = "{{ config.img_base }}horde.gif";
+                        else
+                            pointImg = "{{ config.img_base }}allia.gif";
+                        
+                        if (point.name.includes('(')) {
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        } else {
+                            pointImg = "{{ config.img_base2 }}" + point.race + "-" + point.gender + ".gif";
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        }
+                    }
+                }
+            }
+            
+            // Update all point layers
+            for(var i = 0; i < maps_count; i++) {
+                var obj = getPointsLayerByID(i);
+                obj.innerHTML = instances[i] + single[i] + groups[i];
+            }
+        }
+
+        function regeneratePointsForNormal() {
+            if (!mpoints || mpoints.length === 0) return;
+            
+            // Clear existing points
+            for(var i = 0; i < maps_count; i++) {
+                var obj = getPointsLayerByID(i);
+                obj.innerHTML = '';
+            }
+            
+            var instances = ['', '', ''];
+            var groups = ['', '', ''];
+            var single = ['', '', ''];
+            
+            // Regenerate points with normal positioning
+            for(var n = 0; n < mpoints.length; n++) {
+                var point = mpoints[n];
+                
+                if(!in_array(point.map_id, maps_array)) {
+                    instances[point.Extention] += '<img src="{{ config.img_base }}inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[point.Extention][point.map_id]+'px; top: '+instances_y[point.Extention][point.map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
+                } else if(point.player > 1) {
+                    groups[point.Extention] += '<img src="{{ config.img_base }}group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                } else {
+                    var pointImg;
+                    if(point.faction)
+                        pointImg = "{{ config.img_base }}horde.gif";
+                    else
+                        pointImg = "{{ config.img_base }}allia.gif";
+                    
+                    if (point.name.includes('(')) {
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                    } else {
+                        pointImg = "{{ config.img_base2 }}" + point.race + "-" + point.gender + ".gif";
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                    }
+                }
+            }
+            
+            // Update all point layers
+            for(var i = 0; i < maps_count; i++) {
+                var obj = getPointsLayerByID(i);
+                obj.innerHTML = instances[i] + single[i] + groups[i];
+            }
+        }
+
+        function scalePointsForGrid(isGrid) {
+            // This function is now replaced by regeneratePointsForGrid/regeneratePointsForNormal
+            // Keeping it for compatibility but it does nothing
         }
 
         var mpoints = [];
@@ -734,7 +980,18 @@
                 document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr><td><img src=\\\'{{ config.img_base }}hordeicon.gif\\\'></td><td><b style=\\\'color: rgb(210,50,30);\\\'>{{ lang_defs.faction[1] }}:</b> <b>\'+horde_count[i]+\'</b></td></tr><tr><td><img src=\\\'{{ config.img_base }}allianceicon.gif\\\'></td><td><b style=\\\'color: rgb(0,150,190);\\\'>{{ lang_defs.faction[0] }}:</b> <b>\'+alliance_count[i]+\'</b></td></tr>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b> '+players_count[i]+'';
             }
             // Starting map to show: outland (1) / northrend (2)
-            switchworld(starting_map);
+            if (!document.body.classList.contains('grid-mode')) {
+                switchworld(starting_map);
+            } else {
+                // If in grid mode, make sure all maps are visible and regenerate points
+                for(var i = 0; i < maps_count; i++) {
+                    var obj_map_layer = getMapLayerByID(i);
+                    var obj_points_layer = getPointsLayerByID(i);
+                    obj_map_layer.style.visibility = "visible";
+                    obj_points_layer.style.visibility = "visible";
+                }
+                regeneratePointsForGrid();
+            }
             console.log("[js] Player data processed successfully");
         }
 
@@ -883,8 +1140,20 @@
         }
 
         function start() {
+            // Force grid mode to false at startup
+            var checkbox = document.getElementById('gridModeCheckbox');
+            checkbox.checked = false;
+            document.body.classList.remove('grid-mode');
+            
             reset();
             
+            // Improved mouse tracking for all browsers
+            document.addEventListener('mousemove', function(e) {
+                pointx = e.pageX || (e.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft));
+                pointy = e.pageY || (e.clientY + (document.documentElement.scrollTop || document.body.scrollTop));
+            });
+            
+            // Fallback for older browsers
             if(navigator.appName=="Netscape") {
                 document.onmousemove=function(e) {
                     pointx = e.pageX;
