@@ -199,6 +199,20 @@
             color: #E7CF07;
             filter: Glow(Color=#000099, Strength=3);
         }
+        #refresh_timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+            font-family: arial;
+            font-size: 14px;
+            font-weight: bold;
+            color: #EABA28;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
         #server_info {
             font-family: Georgia, "Times New Roman", Times, serif;
             font-size: 20px;
@@ -281,6 +295,8 @@
 </head>
 
 <body onload="start()">
+    <div id="refresh_timer">Next update: <span id="refresh_countdown">--</span>s</div>
+    
     <div id="gridToggle">
         <input type="checkbox" id="gridModeCheckbox" onchange="toggleGridMode()">
         <label for="gridModeCheckbox">Show All Maps</label>
@@ -320,7 +336,12 @@
     <script type="text/javascript">
         // Configuration variables from Flask
         var current_map = 0;
-        var time = {{ config.map_time }};
+        
+        // UPDATE INTERVAL CONFIGURATION
+        var time = {{ config.map_time }}; // 30 seconds (default from Flask config)
+        //var time = 60; // 1 minute updates
+        //var time = 120; // 2 minute updates
+        
         var show_time = {{ config.map_show_time }};
         var show_status = {{ config.map_show_status }};
         var maps_count = {{ lang_defs.maps_names|length }};
@@ -1128,14 +1149,40 @@
             var now = new Date();
             var ms = now.getTime() - then.getTime();
             ms = time*1000-ms;
+            var secondsLeft = Math.round(ms/1000);
+            
+            // Update both timers
             if ((show_time==1) && (time!=0)) {
-                document.getElementById("timer").innerHTML=(Math.round(ms/1000));
+                document.getElementById("timer").innerHTML = secondsLeft;
             }
+            
+            // Update refresh countdown timer
+            var refreshTimer = document.getElementById("refresh_countdown");
+            if (refreshTimer) {
+                if (secondsLeft > 0) {
+                    refreshTimer.innerHTML = secondsLeft;
+                    refreshTimer.style.color = "#EABA28";
+                } else {
+                    refreshTimer.innerHTML = "Updating...";
+                    refreshTimer.style.color = "#ff6600";
+                }
+            }
+            
             if (ms<=0) {
                 reset();
             }
             if (time!=0) {
                 setTimeout("display();", 500);
+            }
+        }
+
+        function getUpdateIntervalText() {
+            if (time < 60) {
+                return time + " seconds";
+            } else if (time < 3600) {
+                return Math.round(time/60) + " minute" + (time >= 120 ? "s" : "");
+            } else {
+                return Math.round(time/3600) + " hour" + (time >= 7200 ? "s" : "");
             }
         }
 
@@ -1146,6 +1193,18 @@
             document.body.classList.remove('grid-mode');
             
             reset();
+            
+            // Start the display timer for countdown
+            display();
+            
+            // Show update interval info
+            console.log("[js] Starting AzerothCore playermap with " + getUpdateIntervalText() + " updates!");
+            
+            // Update the refresh timer label
+            var refreshTimer = document.getElementById("refresh_timer");
+            if (refreshTimer && time >= 60) {
+                refreshTimer.innerHTML = 'Next update (' + getUpdateIntervalText() + '): <span id="refresh_countdown">--</span>s';
+            }
             
             // Improved mouse tracking for all browsers
             document.addEventListener('mousemove', function(e) {
@@ -1162,9 +1221,8 @@
                 }
             }
 
-            // Update page every 2nd min
+            // Update page every 2nd min as backup (keep this as failsafe)
             setInterval(function() { window.location.reload(); }, 120000);
-            console.log("[js] Starting AzerothCore playermap!");
         }
 
         function copy(text) {

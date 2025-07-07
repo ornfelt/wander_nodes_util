@@ -4,6 +4,8 @@ import socket
 import json
 from datetime import datetime
 
+# pip install Flask PyMySQL
+
 app = Flask(__name__)
 
 # Configuration
@@ -65,7 +67,7 @@ CONFIG = {
     'map_status_gm_include_all': 0,
     'map_show_status': 1,
     'map_show_time': 1,
-    'map_time': 5,
+    'map_time': 30,
     'map_time_to_show_uptime': 3000,
     'map_time_to_show_maxonline': 3000,
     'map_time_to_show_gmonline': 3000,
