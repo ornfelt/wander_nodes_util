@@ -21,13 +21,13 @@ CONFIG = {
         'port': 3306,
 
         # acore
-        'user': 'acore',
-        'password': 'acore',
-        'database': 'acore_auth',
+        #'user': 'acore',
+        #'password': 'acore',
+        #'database': 'acore_auth',
         # tcore
-        #'user': 'trinity',
-        #'password': 'trinity',
-        #'database': 'auth',
+        'user': 'trinity',
+        'password': 'trinity',
+        'database': 'auth',
 
         'charset': 'utf8'
     },
@@ -38,13 +38,13 @@ CONFIG = {
             'port': 3306,
 
             # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_world',
+            #'user': 'acore',
+            #'password': 'acore',
+            #'database': 'acore_world',
             # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'world',
+            'user': 'trinity',
+            'password': 'trinity',
+            'database': 'world',
 
             'charset': 'utf8'
         }
@@ -56,13 +56,13 @@ CONFIG = {
             'port': 3306,
 
             # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_characters',
+            #'user': 'acore',
+            #'password': 'acore',
+            #'database': 'acore_characters',
             # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'characters',
+            'user': 'trinity',
+            'password': 'trinity',
+            'database': 'characters',
 
             'charset': 'utf8'
         }
@@ -2512,9 +2512,9 @@ def get_players():
     gm_accounts = []
 
     # acore:
-    gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
+    #gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
     # tcore:
-    #gm_query = "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'"
+    gm_query = "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'"
 
     gm_result = realm_db.query_one(gm_query)
     if gm_result and gm_result['ids']:

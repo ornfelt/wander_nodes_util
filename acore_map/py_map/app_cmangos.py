@@ -20,14 +20,10 @@ CONFIG = {
         'host': '127.0.0.1',
         'port': 3306,
 
-        # acore
-        'user': 'acore',
-        'password': 'acore',
-        'database': 'acore_auth',
-        # tcore
-        #'user': 'trinity',
-        #'password': 'trinity',
-        #'database': 'auth',
+        # cmangos
+        'user': 'root',
+        'password': 'xxx',
+        'database': 'tbcrealmd',
 
         'charset': 'utf8'
     },
@@ -38,13 +34,9 @@ CONFIG = {
             'port': 3306,
 
             # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_world',
-            # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'world',
+            'user': 'root',
+            'password': 'xxx',
+            'database': 'tbcmangos',
 
             'charset': 'utf8'
         }
@@ -56,13 +48,9 @@ CONFIG = {
             'port': 3306,
 
             # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_characters',
-            # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'characters',
+            'user': 'root',
+            'password': 'xxx',
+            'database': 'tbccharacters',
 
             'charset': 'utf8'
         }
@@ -2480,7 +2468,7 @@ def sort_players(players):
 def index():
     """Main page route"""
     realm_name = get_realm_name()
-    return render_template('index.html', 
+    return render_template('index_cmangos.html', 
                          config=CONFIG, 
                          lang_defs=LANG_DEFS,
                          character_race=CHARACTER_RACE,
@@ -2512,14 +2500,14 @@ def get_players():
     gm_accounts = []
 
     # acore:
-    gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
+    #gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
     # tcore:
     #gm_query = "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'"
 
-    gm_result = realm_db.query_one(gm_query)
-    if gm_result and gm_result['ids']:
-        gm_accounts = gm_result['ids'].split(' ')
-        print(f"[api] Found {len(gm_accounts)} GM accounts")
+    #gm_result = realm_db.query_one(gm_query)
+    #if gm_result and gm_result['ids']:
+    #    gm_accounts = gm_result['ids'].split(' ')
+    #    print(f"[api] Found {len(gm_accounts)} GM accounts")
     
     # Get characters db connection
     char_db_config = CONFIG['characters_db'][CONFIG['realm_id']]
@@ -2548,7 +2536,7 @@ def get_players():
     # Query players and bots
     player_query = """
         SELECT `guid`, `account`, `name`, `class`, `race`, `level`, `gender`, 
-               `position_x`, `position_y`, `map`, `zone`, `extra_flags` 
+               `position_x`, `position_y`, `position_z`, `map`, `zone`, `extra_flags` 
         FROM `characters` 
         WHERE `online`='1' 
         ORDER BY `name`
@@ -2566,16 +2554,16 @@ def get_players():
     players_result = characters_db.query(player_query)
     print(f"[api] Found {len(players_result) if players_result else 0} players")
     
-    print("[api] Fetching bot data...")
-    bots_result = characters_db.query(bot_query)
-    print(f"[api] Found {len(bots_result) if bots_result else 0} bots")
+    #print("[api] Fetching bot data...")
+    #bots_result = characters_db.query(bot_query)
+    #print(f"[api] Found {len(bots_result) if bots_result else 0} bots")
     
     # Merge results
     merged_results = []
     if players_result:
         merged_results.extend(players_result)
-    if bots_result:
-        merged_results.extend(bots_result)
+    #if bots_result:
+    #    merged_results.extend(bots_result)
     
     print(f"[api] Total characters: {len(merged_results)}")
     
@@ -2628,6 +2616,7 @@ def get_players():
         char_data = {
             'x': character['position_x'],
             'y': character['position_y'],
+            'z': character['position_z'],
             'dead': 0,  # TODO?
             'name': character['name'],
             'map': character['map'],
