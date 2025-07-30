@@ -1,0 +1,27 @@
+{
+  "name": "wow-playermap-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript WoW Player Map Server",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "watch": "tsc -w",
+    "dev:watch": "nodemon --exec ts-node src/server.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.1.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "keywords": ["wow", "playermap", "typescript", "express", "mysql"],
+  "author": "Your Name",
+  "license": "MIT"
+}
