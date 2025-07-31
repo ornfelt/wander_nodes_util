@@ -1,125 +1,13 @@
-import express, { Request, Response } from 'express';
-import mysql, { Connection, RowDataPacket } from 'mysql2/promise';
-import { Socket } from 'net';
-import * as net from 'net';
+const express = require('express');
+const mysql = require('mysql2/promise');
+const path = require('path');
+const net = require('net');
 
 const app = express();
 const PORT = 5000;
 
-// Type definitions
-interface DatabaseConfig {
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    database: string;
-    charset: string;
-}
-
-interface ServerConfig {
-    addr: string;
-    addr_wan: string;
-    game_port: number;
-    rev: string;
-    both_factions: boolean;
-}
-
-interface Config {
-    language: string;
-    site_encoding: string;
-    db_type: string;
-    realm_id: number;
-    realm_db: DatabaseConfig;
-    world_db: { [key: number]: DatabaseConfig };
-    characters_db: { [key: number]: DatabaseConfig };
-    server: { [key: number]: ServerConfig };
-    gm_online: boolean;
-    gm_online_count: number;
-    map_gm_show_online_only_gmoff: number;
-    map_gm_show_online_only_gmvisible: number;
-    map_gm_add_suffix: number;
-    map_status_gm_include_all: number;
-    map_show_status: number;
-    map_show_time: number;
-    map_time: number;
-    map_time_to_show_uptime: number;
-    map_time_to_show_maxonline: number;
-    map_time_to_show_gmonline: number;
-    maps_for_points: string;
-    img_base: string;
-    img_base2: string;
-    PLAYER_FLAGS: number;
-}
-
-interface LanguageDefinitions {
-    maps_names: string[];
-    total: string;
-    faction: string[];
-    name: string;
-    race: string;
-    class: string;
-    level: string;
-    click_to_next: string;
-    click_to_first: string;
-}
-
-interface CharacterData {
-    x: number;
-    y: number;
-    dead: number;
-    name: string;
-    map: number;
-    zone: string;
-    cl: number;
-    race: number;
-    level: number;
-    gender: number;
-    Extention: number;
-    leaderGuid: number;
-}
-
-interface CharacterRow extends RowDataPacket {
-    guid: number;
-    account: number;
-    name: string;
-    class: number;
-    race: number;
-    level: number;
-    gender: number;
-    position_x: number;
-    position_y: number;
-    map: number;
-    zone: number;
-    extra_flags: number;
-}
-
-interface RealmRow extends RowDataPacket {
-    name: string;
-}
-
-interface GMRow extends RowDataPacket {
-    ids: string;
-}
-
-interface UptimeRow extends RowDataPacket {
-    starttime: number;
-    maxplayers: number;
-}
-
-interface StatusData {
-    online: number;
-    uptime: number;
-    maxplayers: number;
-    gmonline: number;
-}
-
-interface ApiResponse {
-    status: StatusData | null;
-    online: (number[] | CharacterData)[] | null;
-}
-
 // Configuration
-const CONFIG: Config = {
+const CONFIG = {
     language: 'en',
     site_encoding: 'utf8',
     db_type: 'MySQL',
@@ -129,9 +17,9 @@ const CONFIG: Config = {
     realm_db: {
         host: '127.0.0.1',
         port: 3306,
-        user: 'acore',
-        password: 'acore',
-        database: 'acore_auth',
+        user: 'root',
+        password: 'xxx',
+        database: 'tbcrealmd',
         charset: 'utf8'
     },
     
@@ -139,9 +27,9 @@ const CONFIG: Config = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_world',
+            user: 'root',
+            password: 'xxx',
+            database: 'tbcmangos',
             charset: 'utf8'
         }
     },
@@ -150,9 +38,9 @@ const CONFIG: Config = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_characters',
+            user: 'root',
+            password: 'xxx',
+            database: 'tbccharacters',
             charset: 'utf8'
         }
     },
@@ -190,7 +78,7 @@ const CONFIG: Config = {
 };
 
 // Language definitions
-const LANG_DEFS: LanguageDefinitions = {
+const LANG_DEFS = {
     maps_names: ['Azeroth', 'Outland', 'Northrend'],
     total: 'Total',
     faction: ['Alliance', 'Horde'],
@@ -202,18 +90,18 @@ const LANG_DEFS: LanguageDefinitions = {
     click_to_first: 'Click: go to first'
 };
 
-const CHARACTER_RACE: { [key: number]: string } = {
+const CHARACTER_RACE = {
     1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf', 5: 'Undead',
     6: 'Tauren', 7: 'Gnome', 8: 'Troll', 9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei'
 };
 
-const CHARACTER_CLASS: { [key: number]: string } = {
+const CHARACTER_CLASS = {
     1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue', 5: 'Priest',
     6: 'Death Knight', 7: 'Shaman', 8: 'Mage', 9: 'Warlock', 11: 'Druid'
 };
 
 // TODO: put into json file...
-const ZONES: { [key: number]: string } = {
+const ZONES = {
     1: 'Dun Morogh',
     2: 'Longshore',
     3: 'Badlands',
@@ -2482,11 +2370,7 @@ const ZONES: { [key: number]: string } = {
 
 // Database utility class
 class DBLayer {
-    private config: DatabaseConfig;
-    private connection: Connection | null = null;
-    public num_queries: number = 0;
-
-    constructor(host: string, user: string, password: string, database: string, port: number = 3306) {
+    constructor(host, user, password, database, port = 3306) {
         this.config = {
             host: host,
             port: port,
@@ -2495,25 +2379,27 @@ class DBLayer {
             database: database,
             charset: 'utf8'
         };
+        this.connection = null;
+        this.num_queries = 0;
     }
 
-    async connect(): Promise<boolean> {
+    async connect() {
         try {
             this.connection = await mysql.createConnection(this.config);
             console.log(`[db] Connected to database: ${this.config.database}`);
             return true;
-        } catch (error: any) {
+        } catch (error) {
             console.log(`[db] Connection failed: ${error.message}`);
             this.connection = null;
             return false;
         }
     }
 
-    isValid(): boolean {
+    isValid() {
         return this.connection !== null;
     }
 
-    async query<T extends RowDataPacket>(sql: string): Promise<T[] | null> {
+    async query(sql) {
         if (!this.connection) {
             console.log("[db] No valid connection");
             return null;
@@ -2521,21 +2407,21 @@ class DBLayer {
 
         try {
             console.log(`[db] Executing query: ${sql.substring(0, 100)}...`);
-            const [rows] = await this.connection.execute<T[]>(sql);
+            const [rows] = await this.connection.execute(sql);
             this.num_queries++;
             return rows;
-        } catch (error: any) {
+        } catch (error) {
             console.log(`[db] Query failed: ${error.message}`);
             return null;
         }
     }
 
-    async queryOne<T extends RowDataPacket>(sql: string): Promise<T | null> {
-        const results = await this.query<T>(sql);
+    async queryOne(sql) {
+        const results = await this.query(sql);
         return results && results.length > 0 ? results[0] : null;
     }
 
-    async close(): Promise<void> {
+    async close() {
         if (this.connection) {
             await this.connection.end();
             console.log("[db] Connection closed");
@@ -2544,18 +2430,18 @@ class DBLayer {
 }
 
 // Utility functions
-function getZoneName(zoneId: number): string {
+function getZoneName(zoneId) {
     return ZONES[zoneId] || 'Unknown zone';
 }
 
-async function testRealm(): Promise<boolean> {
+async function testRealm() {
     try {
         const server = CONFIG.server[CONFIG.realm_id].addr;
         const port = CONFIG.server[CONFIG.realm_id].game_port;
         console.log(`[realm] Testing connection to ${server}:${port}`);
         
-        return new Promise<boolean>((resolve) => {
-            const socket: Socket = new net.Socket();
+        return new Promise((resolve) => {
+            const socket = new net.Socket();
             socket.setTimeout(500);
             
             socket.on('connect', () => {
@@ -2577,13 +2463,13 @@ async function testRealm(): Promise<boolean> {
             
             socket.connect(port, server);
         });
-    } catch (error: any) {
+    } catch (error) {
         console.log(`[realm] Connection test failed: ${error.message}`);
         return false;
     }
 }
 
-function sortPlayers(players: CharacterData[]): CharacterData[] {
+function sortPlayers(players) {
     return players.sort((a, b) => {
         if (a.leaderGuid === b.leaderGuid) {
             return a.name.localeCompare(b.name);
@@ -2592,7 +2478,7 @@ function sortPlayers(players: CharacterData[]): CharacterData[] {
     });
 }
 
-async function getRealmName(): Promise<string> {
+async function getRealmName() {
     const realmDb = new DBLayer(
         CONFIG.realm_db.host,
         CONFIG.realm_db.user,
@@ -2603,7 +2489,7 @@ async function getRealmName(): Promise<string> {
     
     if (await realmDb.connect()) {
         const query = `SELECT name FROM realmlist WHERE id = ${CONFIG.realm_id}`;
-        const result = await realmDb.queryOne<RealmRow>(query);
+        const result = await realmDb.queryOne(query);
         await realmDb.close();
         return result ? result.name : "Unknown Realm";
     }
@@ -2616,7 +2502,7 @@ app.use(express.static('public'));
 app.use('/img', express.static('img'));
 
 // Main page route
-app.get('/', async (req: Request, res: Response): Promise<void> => {
+app.get('/', async (req, res) => {
     const realmName = await getRealmName();
     
     // Generate the HTML with embedded data
@@ -3352,7 +3238,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 } else {
                     // Player/bot points - use original positions
                     if(point.player > 1) {
-                        groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                        groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                     } else {
                         var pointImg;
                         if(point.faction)
@@ -3361,10 +3247,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                             pointImg = CONFIG.img_base + "allia.gif";
                         
                         if (point.name.includes('(')) {
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         } else {
                             pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         }
                     }
                 }
@@ -3397,7 +3283,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 if(!in_array(point.map_id, maps_array)) {
                     instances[point.Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[point.Extention][point.map_id]+'px; top: '+instances_y[point.Extention][point.map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 } else if(point.player > 1) {
-                    groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                    groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 } else {
                     var pointImg;
                     if(point.faction)
@@ -3406,10 +3292,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         pointImg = CONFIG.img_base + "allia.gif";
                     
                     if (point.name.includes('(')) {
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
             }
@@ -3564,6 +3450,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         mpoints[point_count].single_text = data[i].zone+'<br>'+data[i].level+' lvl<br>'+char+'&nbsp;<img src="' + CONFIG.img_base2 + data[i].cl+'.gif" style="float:center" border="0" width="18" height="18"><br>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
                         mpoints[point_count].x = pos.x;
                         mpoints[point_count].y = pos.y;
+                        // raw world coords for teleport
+                        mpoints[point_count].position_x = data[i].x;
+                        mpoints[point_count].position_y = data[i].y;
+                        mpoints[point_count].position_z = data[i].z;
                     } else {
                         mpoints[point_count].single_text='';
                         mpoints[point_count].x = 0;
@@ -3591,7 +3481,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 if(!in_array(mpoints[n].map_id, maps_array))
                     instances[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 else if(mpoints[n].player > 1)
-                    groups[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                    groups[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 else {
                     var point;
                     if(mpoints[n].faction)
@@ -3600,11 +3490,11 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         point = CONFIG.img_base + "allia.gif";
                     
                     if (mpoints[n].name.includes('(')) {
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         // Show race gif instead of horde / allia gif for players
                         point = CONFIG.img_base2 + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
                 n++;
@@ -3899,15 +3789,27 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             return result;
         }
 
-        function onClickNode(e) {
-            var t, data;
-            t=document.getElementById("tip");
-            
-            if (t.innerHTML.includes('(')) {
-                const tip_split = t.innerHTML.split("(");
-                var copy_text = ".npcb go " + tip_split[1].split(")")[0];
-                console.log("[js] COPYING TEXT: " + copy_text);
-                copy(copy_text);
+        function onClickNode(e, pointIndex) {
+            // If we were called with a valid pointIndex, use the stored XYZ
+            if (typeof pointIndex !== 'undefined' && mpoints[pointIndex]) {
+                var pt = mpoints[pointIndex];
+                var copyText = ".go xyz " 
+                + pt.position_x + " " 
+                + pt.position_y + " " 
+                + pt.position_z + " " 
+                + pt.map_id;
+                console.log("[js] COPYING TEXT:", copyText);
+                copy(copyText);
+                return;
+            }
+
+            // Otherwise fall back to your old GUID logic:
+            var tipEl = document.getElementById("tip");
+            if (tipEl.innerHTML.indexOf("(") !== -1) {
+                var guid = tipEl.innerHTML.split("(")[1].split(")")[0];
+                var copyText = ".npcb go " + guid;
+                console.log("[js] COPYING TEXT (fallback):", copyText);
+                copy(copyText);
             }
         }
         
@@ -3920,10 +3822,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 // API endpoint for player data
-app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
+app.get('/api/players', async (req, res) => {
     console.log("[api] Starting player data fetch");
     
-    const result: ApiResponse = { status: null, online: null };
+    const result = { status: null, online: null };
     
     // Get realm database connection
     const realmDb = new DBLayer(
@@ -3936,19 +3838,12 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     
     if (!(await realmDb.connect())) {
         console.log("[api] Realm database connection failed");
-        result.status = { online: 2, uptime: 0, maxplayers: 0, gmonline: 0 };
-        res.json(result);
-        return;
+        result.status = { online: 2 };
+        return res.json(result);
     }
     
     // Get GM accounts
-    let gmAccounts: string[] = [];
-    const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
-    const gmResult = await realmDb.queryOne<GMRow>(gmQuery);
-    if (gmResult && gmResult.ids) {
-        gmAccounts = gmResult.ids.split(' ');
-        console.log(`[api] Found ${gmAccounts.length} GM accounts`);
-    }
+    let gmAccounts = [];
     
     // Get characters database connection
     const charDbConfig = CONFIG.characters_db[CONFIG.realm_id];
@@ -3962,56 +3857,43 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     
     if (!(await charactersDb.connect())) {
         console.log("[api] Characters database connection failed");
-        result.status = { online: 2, uptime: 0, maxplayers: 0, gmonline: 0 };
+        result.status = { online: 2 };
         await realmDb.close();
-        res.json(result);
-        return;
+        return res.json(result);
     }
     
     // Constants for race detection
     const HORDE_RACES = 0x2B2;
     const ALLIANCE_RACES = 0x44D;
-    const OUTLAND_INST: number[] = [540,542,543,544,545,546,547,548,550,552,553,554,555,556,557,558,559,562,564,565];
-    const NORTHREND_INST: number[] = [533,574,575,576,578,599,600,601,602,603,604,608,615,616,617,619,624,631,632,649,650,658,668,724];
+    const OUTLAND_INST = [540,542,543,544,545,546,547,548,550,552,553,554,555,556,557,558,559,562,564,565];
+    const NORTHREND_INST = [533,574,575,576,578,599,600,601,602,603,604,608,615,616,617,619,624,631,632,649,650,658,668,724];
     
     const mapsCount = LANG_DEFS.maps_names.length;
-    const count: number[][] = Array.from({length: mapsCount}, () => [0, 0]);
+    const count = Array.from({length: mapsCount}, () => [0, 0]);
     
     // Query players and bots
     const playerQuery = `
         SELECT \`guid\`, \`account\`, \`name\`, \`class\`, \`race\`, \`level\`, \`gender\`, 
-               \`position_x\`, \`position_y\`, \`map\`, \`zone\`, \`extra_flags\` 
+               \`position_x\`, \`position_y\`, \`position_z\`, \`map\`, \`zone\`, \`extra_flags\` 
         FROM \`characters\` 
         WHERE \`online\`='1' 
         ORDER BY \`name\`
     `;
     
-    const botQuery = `
-        SELECT \`guid\`, \`account\`, \`name\`, \`class\`, \`race\`, \`level\`, \`gender\`, 
-               \`position_x\`, \`position_y\`, \`map\`, \`zone\`, \`extra_flags\` 
-        FROM \`characters_playermap\` 
-        WHERE \`online\`='1' 
-        ORDER BY \`name\`
-    `;
-    
     console.log("[api] Fetching player data...");
-    const playersResult = await charactersDb.query<CharacterRow>(playerQuery) || [];
+    const playersResult = await charactersDb.query(playerQuery) || [];
     console.log(`[api] Found ${playersResult.length} players`);
     
-    console.log("[api] Fetching bot data...");
-    const botsResult = await charactersDb.query<CharacterRow>(botQuery) || [];
-    console.log(`[api] Found ${botsResult.length} bots`);
-    
     // Merge results
-    const mergedResults: CharacterRow[] = [...playersResult, ...botsResult];
+    const mergedResults = [...playersResult];
     console.log(`[api] Total characters: ${mergedResults.length}`);
     
-    const arr: CharacterData[] = [];
+    const arr = [];
     let gmOnline = 0;
     
     for (const character of mergedResults) {
         // Determine extension (map type)
-        let extension: number;
+        let extension;
         if (character.map === 530 && character.position_y > -1000 || OUTLAND_INST.includes(character.map)) {
             extension = 1;
         } else if (character.map === 571 || NORTHREND_INST.includes(character.map)) {
@@ -4063,10 +3945,11 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
         }
         
         // Prepare character data
-        const charData: CharacterData = {
+        const charData = {
             x: character.position_x,
             y: character.position_y,
-            dead: 0, // Simplified - you can implement death detection
+            z: character.position_z,
+            dead: 0, // TODO?
             name: character.name,
             map: character.map,
             zone: getZoneName(character.zone),
@@ -4075,7 +3958,7 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
             level: character.level,
             gender: character.gender,
             Extention: extension,
-            leaderGuid: 0 // Simplified - you can implement group detection
+            leaderGuid: 0 // TODO?
         };
         
         arr.push(charData);
@@ -4087,16 +3970,8 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
         result.online = null;
     } else {
         const sortedArr = sortPlayers(arr);
-        // Prepend count data - flatten the 2D array to 1D arrays
-        const finalArr: (number[] | CharacterData)[] = [];
-        
-        // Add each count array separately
-        for (const countArray of count) {
-            finalArr.push(countArray);
-        }
-        
-        // Add character data
-        finalArr.push(...sortedArr);
+        // Prepend count data
+        const finalArr = [...count, ...sortedArr];
         result.online = finalArr;
         console.log(`[api] Returning ${arr.length} characters with count data`);
     }
@@ -4110,10 +3985,10 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
             FROM \`uptime\` 
             WHERE \`starttime\`=(SELECT MAX(\`starttime\`) FROM \`uptime\`)
         `;
-        const uptimeResult = await realmDb.queryOne<UptimeRow>(uptimeQuery);
+        const uptimeResult = await realmDb.queryOne(uptimeQuery);
         
         if (uptimeResult) {
-            const status: StatusData = {
+            const status = {
                 online: await testRealm() ? 1 : 0,
                 uptime: currentTimestamp - uptimeResult.starttime,
                 maxplayers: uptimeResult.maxplayers,
@@ -4134,8 +4009,8 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Start server
-app.listen(PORT, (): void => {
-    console.log(`[server] TypeScript WoW Player Map server running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`[server] Node.js WoW Player Map server running on http://localhost:${PORT}`);
     console.log(`[server] Configuration: ${CONFIG.map_time}s updates, ${CONFIG.gm_online ? 'GM' : 'No GM'} visibility`);
 });
 

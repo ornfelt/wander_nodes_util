@@ -2558,6 +2558,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             background-image: url(${CONFIG.img_base}azeroth.jpg);
             z-index: 10;
         }
@@ -2568,6 +2569,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             background-image: url(${CONFIG.img_base}outland.jpg);
             z-index: 9;
         }
@@ -2578,6 +2580,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             background-image: url(${CONFIG.img_base}northrend.jpg);
             z-index: 8;
         }
@@ -2587,6 +2590,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             z-index: 100;
         }
         #pointsOutland {
@@ -2596,6 +2600,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             z-index: 99;
         }
         #pointsNorthrend {
@@ -2605,6 +2610,7 @@ app.get('/', async (req, res) => {
             width: 966px;
             left: 50%;
             margin-left: -483px;
+            top: 120px;
             z-index: 98;
         }
         
@@ -2620,7 +2626,7 @@ app.get('/', async (req, res) => {
         .grid-mode #outland {
             height: 732px;
             width: 966px;
-            left: 10%;
+            left: 5%;
             margin-left: -100px;
             top: 870px;
             background-size: 966px 732px;
@@ -2647,7 +2653,7 @@ app.get('/', async (req, res) => {
         .grid-mode #pointsOutland {
             height: 732px;
             width: 966px;
-            left: 10%;
+            left: 5%;
             margin-left: -100px;
             top: 870px;
             visibility: visible !important;
@@ -2702,6 +2708,7 @@ app.get('/', async (req, res) => {
             left: 50%;
             margin-top: 711px;
             margin-left: -483px;
+            top: 120px;
             z-index: 101;
             text-align: center;
         }

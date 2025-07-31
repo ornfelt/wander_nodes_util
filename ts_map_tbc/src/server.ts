@@ -66,6 +66,7 @@ interface LanguageDefinitions {
 interface CharacterData {
     x: number;
     y: number;
+    z: number;
     dead: number;
     name: string;
     map: number;
@@ -129,9 +130,9 @@ const CONFIG: Config = {
     realm_db: {
         host: '127.0.0.1',
         port: 3306,
-        user: 'acore',
-        password: 'acore',
-        database: 'acore_auth',
+        user: 'root',
+        password: 'xxx',
+        database: 'tbcrealmd',
         charset: 'utf8'
     },
     
@@ -139,9 +140,9 @@ const CONFIG: Config = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_world',
+            user: 'root',
+            password: 'xxx',
+            database: 'tbcmangos',
             charset: 'utf8'
         }
     },
@@ -150,9 +151,9 @@ const CONFIG: Config = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_characters',
+            user: 'root',
+            password: 'xxx',
+            database: 'tbccharacters',
             charset: 'utf8'
         }
     },
@@ -3352,7 +3353,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 } else {
                     // Player/bot points - use original positions
                     if(point.player > 1) {
-                        groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                        groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                     } else {
                         var pointImg;
                         if(point.faction)
@@ -3361,10 +3362,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                             pointImg = CONFIG.img_base + "allia.gif";
                         
                         if (point.name.includes('(')) {
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         } else {
                             pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         }
                     }
                 }
@@ -3397,7 +3398,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 if(!in_array(point.map_id, maps_array)) {
                     instances[point.Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[point.Extention][point.map_id]+'px; top: '+instances_y[point.Extention][point.map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 } else if(point.player > 1) {
-                    groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                    groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 } else {
                     var pointImg;
                     if(point.faction)
@@ -3406,10 +3407,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         pointImg = CONFIG.img_base + "allia.gif";
                     
                     if (point.name.includes('(')) {
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
             }
@@ -3564,6 +3565,10 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         mpoints[point_count].single_text = data[i].zone+'<br>'+data[i].level+' lvl<br>'+char+'&nbsp;<img src="' + CONFIG.img_base2 + data[i].cl+'.gif" style="float:center" border="0" width="18" height="18"><br>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
                         mpoints[point_count].x = pos.x;
                         mpoints[point_count].y = pos.y;
+                        // raw world coords for teleport
+                        mpoints[point_count].position_x = data[i].x;
+                        mpoints[point_count].position_y = data[i].y;
+                        mpoints[point_count].position_z = data[i].z;
                     } else {
                         mpoints[point_count].single_text='';
                         mpoints[point_count].x = 0;
@@ -3591,7 +3596,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 if(!in_array(mpoints[n].map_id, maps_array))
                     instances[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 else if(mpoints[n].player > 1)
-                    groups[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event);">';
+                    groups[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 else {
                     var point;
                     if(mpoints[n].faction)
@@ -3600,11 +3605,11 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         point = CONFIG.img_base + "allia.gif";
                     
                     if (mpoints[n].name.includes('(')) {
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         // Show race gif instead of horde / allia gif for players
                         point = CONFIG.img_base2 + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event);">';
+                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
                 n++;
@@ -3899,15 +3904,27 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             return result;
         }
 
-        function onClickNode(e) {
-            var t, data;
-            t=document.getElementById("tip");
-            
-            if (t.innerHTML.includes('(')) {
-                const tip_split = t.innerHTML.split("(");
-                var copy_text = ".npcb go " + tip_split[1].split(")")[0];
-                console.log("[js] COPYING TEXT: " + copy_text);
-                copy(copy_text);
+        function onClickNode(e, pointIndex) {
+            // If we were called with a valid pointIndex, use the stored XYZ
+            if (typeof pointIndex !== 'undefined' && mpoints[pointIndex]) {
+                var pt = mpoints[pointIndex];
+                var copyText = ".go xyz " 
+                + pt.position_x + " " 
+                + pt.position_y + " " 
+                + pt.position_z + " " 
+                + pt.map_id;
+                console.log("[js] COPYING TEXT:", copyText);
+                copy(copyText);
+                return;
+            }
+
+            // Otherwise fall back to your old GUID logic:
+            var tipEl = document.getElementById("tip");
+            if (tipEl.innerHTML.indexOf("(") !== -1) {
+                var guid = tipEl.innerHTML.split("(")[1].split(")")[0];
+                var copyText = ".npcb go " + guid;
+                console.log("[js] COPYING TEXT (fallback):", copyText);
+                copy(copyText);
             }
         }
         
@@ -3943,12 +3960,6 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     
     // Get GM accounts
     let gmAccounts: string[] = [];
-    const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
-    const gmResult = await realmDb.queryOne<GMRow>(gmQuery);
-    if (gmResult && gmResult.ids) {
-        gmAccounts = gmResult.ids.split(' ');
-        console.log(`[api] Found ${gmAccounts.length} GM accounts`);
-    }
     
     // Get characters database connection
     const charDbConfig = CONFIG.characters_db[CONFIG.realm_id];
@@ -3980,16 +3991,8 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     // Query players and bots
     const playerQuery = `
         SELECT \`guid\`, \`account\`, \`name\`, \`class\`, \`race\`, \`level\`, \`gender\`, 
-               \`position_x\`, \`position_y\`, \`map\`, \`zone\`, \`extra_flags\` 
+               \`position_x\`, \`position_y\`, \`position_z\`, \`map\`, \`zone\`, \`extra_flags\` 
         FROM \`characters\` 
-        WHERE \`online\`='1' 
-        ORDER BY \`name\`
-    `;
-    
-    const botQuery = `
-        SELECT \`guid\`, \`account\`, \`name\`, \`class\`, \`race\`, \`level\`, \`gender\`, 
-               \`position_x\`, \`position_y\`, \`map\`, \`zone\`, \`extra_flags\` 
-        FROM \`characters_playermap\` 
         WHERE \`online\`='1' 
         ORDER BY \`name\`
     `;
@@ -3998,12 +4001,8 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     const playersResult = await charactersDb.query<CharacterRow>(playerQuery) || [];
     console.log(`[api] Found ${playersResult.length} players`);
     
-    console.log("[api] Fetching bot data...");
-    const botsResult = await charactersDb.query<CharacterRow>(botQuery) || [];
-    console.log(`[api] Found ${botsResult.length} bots`);
-    
     // Merge results
-    const mergedResults: CharacterRow[] = [...playersResult, ...botsResult];
+    const mergedResults: CharacterRow[] = [...playersResult];
     console.log(`[api] Total characters: ${mergedResults.length}`);
     
     const arr: CharacterData[] = [];
@@ -4066,6 +4065,7 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
         const charData: CharacterData = {
             x: character.position_x,
             y: character.position_y,
+            z: character.position_z,
             dead: 0, // Simplified - you can implement death detection
             name: character.name,
             map: character.map,
