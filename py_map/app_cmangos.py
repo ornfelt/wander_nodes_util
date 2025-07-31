@@ -19,12 +19,9 @@ CONFIG = {
     'realm_db': {
         'host': '127.0.0.1',
         'port': 3306,
-
-        # cmangos
         'user': 'root',
         'password': 'xxx',
         'database': 'tbcrealmd',
-
         'charset': 'utf8'
     },
     
@@ -32,12 +29,9 @@ CONFIG = {
         1: {
             'host': '127.0.0.1',
             'port': 3306,
-
-            # acore
             'user': 'root',
             'password': 'xxx',
             'database': 'tbcmangos',
-
             'charset': 'utf8'
         }
     },
@@ -46,12 +40,9 @@ CONFIG = {
         1: {
             'host': '127.0.0.1',
             'port': 3306,
-
-            # acore
             'user': 'root',
             'password': 'xxx',
             'database': 'tbccharacters',
-
             'charset': 'utf8'
         }
     },
