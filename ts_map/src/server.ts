@@ -6,6 +6,42 @@ import * as net from 'net';
 const app = express();
 const PORT = 5000;
 
+export enum ServerType {
+  ACORE = 'acore',
+  TCORE = 'tcore',
+}
+
+//const SELECTED_SERVER: ServerType = (process.env.SELECTED_SERVER as ServerType) || ServerType.ACORE;
+const SELECTED_SERVER: ServerType = ServerType.TCORE;
+
+const CoreNames: Record<ServerType, string> = {
+  [ServerType.ACORE]: 'AzerothCore',
+  [ServerType.TCORE]: 'TrinityCore',
+};
+
+// Per-core DB credentials
+type Creds = Pick<DatabaseConfig, 'user' | 'password' | 'database'>;
+
+const RealmDBCreds: Record<ServerType, Creds> = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_auth'       },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'auth'             },
+};
+const WorldDBCreds: Record<ServerType, Creds> = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_world'      },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'world'            },
+};
+const CharactersDBCreds: Record<ServerType, Creds> = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_characters' },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'characters'       },
+};
+
+const GMQueries: Record<ServerType, string> = {
+  [ServerType.ACORE]:
+    "SELECT GROUP_CONCAT(`id` SEPARATOR ' ')   AS ids FROM `account_access` WHERE `gmlevel`>'0'",
+  [ServerType.TCORE]:
+    "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') AS ids FROM `account_access` WHERE `SecurityLevel`>'0'",
+};
+
 // Type definitions
 interface DatabaseConfig {
     host: string;
@@ -25,6 +61,8 @@ interface ServerConfig {
 }
 
 interface Config {
+    selected_server: ServerType;
+    core_name:       string;
     language: string;
     site_encoding: string;
     db_type: string;
@@ -33,6 +71,7 @@ interface Config {
     world_db: { [key: number]: DatabaseConfig };
     characters_db: { [key: number]: DatabaseConfig };
     server: { [key: number]: ServerConfig };
+    gmQuery:         string;
     gm_online: boolean;
     gm_online_count: number;
     map_gm_show_online_only_gmoff: number;
@@ -120,6 +159,9 @@ interface ApiResponse {
 
 // Configuration
 const CONFIG: Config = {
+    selected_server: SELECTED_SERVER,
+    core_name:       CoreNames[SELECTED_SERVER],
+
     language: 'en',
     site_encoding: 'utf8',
     db_type: 'MySQL',
@@ -167,6 +209,8 @@ const CONFIG: Config = {
             both_factions: true
         }
     },
+
+    gmQuery: GMQueries[SELECTED_SERVER],
     
     // GM and map settings
     gm_online: true,
@@ -3510,14 +3554,14 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                         az_player_count_a++;
                 }
 
-                if (!data[i].name.includes('(')) {
-                    console.log("[js] Found player in map: " + data[i].map);
-                    if (data[i].map === 530) {
-                        starting_map = 1;
-                    } else if (data[i].map === 571) {
-                        starting_map = 2;
-                    }
-                }
+                //if (!data[i].name.includes('(')) {
+                //    console.log("[js] Found player in map: " + data[i].map);
+                //    if (data[i].map === 530) {
+                //        starting_map = 1;
+                //    } else if (data[i].map === 571) {
+                //        starting_map = 2;
+                //    }
+                //}
 
                 // Fix player count
                 if (data[i].map == 530)
@@ -3639,7 +3683,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             // Create tooltip content for total players
             var totalTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + total_players_count[1] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + total_players_count[0] + "</b></td></tr>";
             
-            document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
+            document.getElementById("server_info").innerHTML=CONFIG.core_name + ' | Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
 
             for(i = 0; i < maps_count; i++) {
                 var mapTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + horde_count[i] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + alliance_count[i] + "</b></td></tr>";
@@ -3943,8 +3987,10 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
     
     // Get GM accounts
     let gmAccounts: string[] = [];
-    const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
-    const gmResult = await realmDb.queryOne<GMRow>(gmQuery);
+    //const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
+    //const gmResult = await realmDb.queryOne<GMRow>(gmQuery);
+    const gmResult = await realmDb.queryOne<GMRow>(CONFIG.gmQuery);
+
     if (gmResult && gmResult.ids) {
         gmAccounts = gmResult.ids.split(' ');
         console.log(`[api] Found ${gmAccounts.length} GM accounts`);

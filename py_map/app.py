@@ -2,14 +2,48 @@ from flask import Flask, render_template, jsonify
 import pymysql
 import socket
 import json
+import os
 from datetime import datetime
 
 # pip install Flask PyMySQL
 
 app = Flask(__name__)
 
+class ServerType:
+    ACORE = 'acore'
+    TCORE = 'tcore'
+
+SELECTED_SERVER = os.getenv('SELECTED_SERVER', ServerType.ACORE)
+#SELECTED_SERVER = ServerType.TCORE
+
+CoreNames = {
+    ServerType.ACORE: 'AzerothCore',
+    ServerType.TCORE:  'TrinityCore',
+}
+
+RealmDBCreds = {
+    ServerType.ACORE: {'user': 'acore',   'password': 'acore',   'database': 'acore_auth'},
+    ServerType.TCORE: {'user': 'trinity', 'password': 'trinity', 'database': 'auth'},
+}
+WorldDBCreds = {
+    ServerType.ACORE: {'user': 'acore',   'password': 'acore',   'database': 'acore_world'},
+    ServerType.TCORE: {'user': 'trinity', 'password': 'trinity', 'database': 'world'},
+}
+CharactersDBCreds = {
+    ServerType.ACORE: {'user': 'acore',   'password': 'acore',   'database': 'acore_characters'},
+    ServerType.TCORE: {'user': 'trinity', 'password': 'trinity', 'database': 'characters'},
+}
+
+GMQueries = {
+    ServerType.ACORE: "SELECT GROUP_CONCAT(`id` SEPARATOR ' ')   as ids FROM `account_access` WHERE `gmlevel`>'0'",
+    ServerType.TCORE:  "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'",
+}
+
 # Configuration
 CONFIG = {
+    'selected_server': SELECTED_SERVER,
+    'core_name': CoreNames[SELECTED_SERVER],
+
     'language': 'en',
     'site_encoding': 'utf8',
     'db_type': 'MySQL',
@@ -19,16 +53,7 @@ CONFIG = {
     'realm_db': {
         'host': '127.0.0.1',
         'port': 3306,
-
-        # acore
-        'user': 'acore',
-        'password': 'acore',
-        'database': 'acore_auth',
-        # tcore
-        #'user': 'trinity',
-        #'password': 'trinity',
-        #'database': 'auth',
-
+        **RealmDBCreds[SELECTED_SERVER],
         'charset': 'utf8'
     },
     
@@ -36,16 +61,7 @@ CONFIG = {
         1: {
             'host': '127.0.0.1',
             'port': 3306,
-
-            # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_world',
-            # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'world',
-
+            **WorldDBCreds[SELECTED_SERVER],
             'charset': 'utf8'
         }
     },
@@ -54,16 +70,7 @@ CONFIG = {
         1: {
             'host': '127.0.0.1',
             'port': 3306,
-
-            # acore
-            'user': 'acore',
-            'password': 'acore',
-            'database': 'acore_characters',
-            # tcore
-            #'user': 'trinity',
-            #'password': 'trinity',
-            #'database': 'characters',
-
+            **CharactersDBCreds[SELECTED_SERVER],
             'charset': 'utf8'
         }
     },
@@ -99,6 +106,8 @@ CONFIG = {
     'img_base2': "static/img/c_icons/",
     'PLAYER_FLAGS': 0  # CHAR_DATA_OFFSET_FLAGS equivalent
 }
+
+gm_query = GMQueries[SELECTED_SERVER]
 
 # Language definitions (map_english.php)
 LANG_DEFS = {
@@ -2512,7 +2521,7 @@ def get_players():
     gm_accounts = []
 
     # acore:
-    gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
+    #gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
     # tcore:
     #gm_query = "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'"
 
@@ -2715,5 +2724,11 @@ def get_realm_name():
 
 if __name__ == '__main__':
     print("[server] Starting Flask WoW Player Map server...")
+
+    print(f"Running on core: {CONFIG['core_name']}, DBs -> "
+        f"realm={CONFIG['realm_db']['database']}, "
+        f"world={CONFIG['world_db'][1]['database']}, "
+        f"chars={CONFIG['characters_db'][1]['database']}")
+
     app.run(debug=True, host='0.0.0.0', port=5000)
 

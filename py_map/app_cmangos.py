@@ -2,14 +2,55 @@ from flask import Flask, render_template, jsonify
 import pymysql
 import socket
 import json
+import os
+from enum import Enum
 from datetime import datetime
 
 # pip install Flask PyMySQL
 
 app = Flask(__name__)
 
+class ServerType(Enum):
+    CMANGOS     = 'cmangos'
+    CMANGOS_TBC = 'cmangos-tbc'
+    VMANGOS     = 'vmangos'
+    MANGOSZERO  = 'mangoszero'
+
+#SELECTED_SERVER = os.getenv('SELECTED_SERVER', ServerType.CMANGOS.value)
+SELECTED_SERVER = ServerType.CMANGOS_TBC.value
+
+CORE_NAME = SELECTED_SERVER
+
+MYSQL_ROOT_PWD = os.getenv('MYSQL_ROOT_PWD', 'xxx')
+
+DB_NAMES = {
+    ServerType.CMANGOS.value: {
+        'characters': 'classiccharacters',
+        'world':      'classicmangos',
+        'realm':      'classicrealmd'
+    },
+    ServerType.CMANGOS_TBC.value: {
+        'characters': 'tbccharacters',
+        'world':      'tbcmangos',
+        'realm':      'tbcrealmd'
+    },
+    ServerType.MANGOSZERO.value: {
+        'characters': 'character0',
+        'world':      'mangos0',
+        'realm':      'realmd0'
+    },
+    ServerType.VMANGOS.value: {
+        'characters': 'vmangos_characters',
+        'world':      'vmangos_mangos',
+        'realm':      'vmangos_realmd'
+    }
+}
+
 # Configuration
 CONFIG = {
+    'selected_server': SELECTED_SERVER,
+    'core_name':       CORE_NAME,
+
     'language': 'en',
     'site_encoding': 'utf8',
     'db_type': 'MySQL',
@@ -20,8 +61,8 @@ CONFIG = {
         'host': '127.0.0.1',
         'port': 3306,
         'user': 'root',
-        'password': 'xxx',
-        'database': 'tbcrealmd',
+        'password': MYSQL_ROOT_PWD,
+        'database': DB_NAMES[SELECTED_SERVER]['realm'],
         'charset': 'utf8'
     },
     
@@ -30,8 +71,8 @@ CONFIG = {
             'host': '127.0.0.1',
             'port': 3306,
             'user': 'root',
-            'password': 'xxx',
-            'database': 'tbcmangos',
+            'password': MYSQL_ROOT_PWD,
+            'database': DB_NAMES[SELECTED_SERVER]['world'],
             'charset': 'utf8'
         }
     },
@@ -41,8 +82,8 @@ CONFIG = {
             'host': '127.0.0.1',
             'port': 3306,
             'user': 'root',
-            'password': 'xxx',
-            'database': 'tbccharacters',
+            'password': MYSQL_ROOT_PWD,
+            'database': DB_NAMES[SELECTED_SERVER]['characters'],
             'charset': 'utf8'
         }
     },
@@ -2695,5 +2736,11 @@ def get_realm_name():
 
 if __name__ == '__main__':
     print("[server] Starting Flask WoW Player Map server...")
+
+    print(f"Running on core: {CONFIG['core_name']}, DBs -> "
+        f"realm={CONFIG['realm_db']['database']}, "
+        f"world={CONFIG['world_db'][1]['database']}, "
+        f"chars={CONFIG['characters_db'][1]['database']}")
+
     app.run(debug=True, host='0.0.0.0', port=5000)
 

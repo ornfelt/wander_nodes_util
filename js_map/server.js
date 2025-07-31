@@ -6,8 +6,45 @@ const net = require('net');
 const app = express();
 const PORT = 5000;
 
+const ServerType = Object.freeze({
+  ACORE: 'acore',
+  TCORE: 'tcore'
+})
+
+const SELECTED_SERVER = process.env.SELECTED_SERVER || ServerType.ACORE
+//const SELECTED_SERVER = ServerType.TCORE
+
+// Map to human-readable names
+const CoreNames = {
+  [ServerType.ACORE]: 'AzerothCore',
+  [ServerType.TCORE]: 'TrinityCore'
+}
+
+// Per-core DB credentials
+const RealmDBCreds = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_auth' },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'auth'       }
+}
+const WorldDBCreds = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_world' },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'world'        }
+}
+const CharactersDBCreds = {
+  [ServerType.ACORE]: { user: 'acore',   password: 'acore',   database: 'acore_characters' },
+  [ServerType.TCORE]: { user: 'trinity', password: 'trinity', database: 'characters'        }
+}
+
+// And the two different GM-account queries
+const GMQueries = {
+  [ServerType.ACORE]: "SELECT GROUP_CONCAT(`id` SEPARATOR ' ')   AS ids FROM `account_access` WHERE `gmlevel`>'0'",
+  [ServerType.TCORE]: "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') AS ids FROM `account_access` WHERE `SecurityLevel`>'0'"
+}
+
 // Configuration
 const CONFIG = {
+    selected_server: SELECTED_SERVER,      
+    core_name:       CoreNames[SELECTED_SERVER],
+
     language: 'en',
     site_encoding: 'utf8',
     db_type: 'MySQL',
@@ -17,17 +54,7 @@ const CONFIG = {
     realm_db: {
         host: '127.0.0.1',
         port: 3306,
-
-        // acore
-        user: 'acore',
-        password: 'acore',
-        database: 'acore_auth',
-
-        // tcore
-        //user: 'trinity',
-        //password: 'trinity',
-        //database: 'auth',
-
+        ...RealmDBCreds[SELECTED_SERVER],
         charset: 'utf8'
     },
     
@@ -35,17 +62,7 @@ const CONFIG = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-
-            // acore
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_world',
-
-            // tcore
-            //user: 'trinity',
-            //password: 'trinity',
-            //database: 'world',
-
+            ...WorldDBCreds[SELECTED_SERVER],
             charset: 'utf8'
         }
     },
@@ -54,21 +71,11 @@ const CONFIG = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-
-            // acore
-            user: 'acore',
-            password: 'acore',
-            database: 'acore_characters',
-
-            // tcore
-            //user: 'trinity',
-            //password: 'trinity',
-            //database: 'characters',
-
+            ...CharactersDBCreds[SELECTED_SERVER],
             charset: 'utf8'
         }
     },
-    
+
     // Server configuration
     server: {
         1: {
@@ -79,6 +86,8 @@ const CONFIG = {
             both_factions: true
         }
     },
+
+    gmQuery: GMQueries[SELECTED_SERVER],
     
     // GM and map settings
     gm_online: true,
@@ -2528,6 +2537,8 @@ app.use('/img', express.static('img'));
 // Main page route
 app.get('/', async (req, res) => {
     const realmName = await getRealmName();
+
+    console.log("realmName: ", realmName);
     
     // Generate the HTML with embedded data
     const html = `<!DOCTYPE html>
@@ -3549,7 +3560,7 @@ app.get('/', async (req, res) => {
             // Create tooltip content for total players
             var totalTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + total_players_count[1] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + total_players_count[0] + "</b></td></tr>";
             
-            document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
+            document.getElementById("server_info").innerHTML=CONFIG.core_name + ' | Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
 
             for(i = 0; i < maps_count; i++) {
                 var mapTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + horde_count[i] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + alliance_count[i] + "</b></td></tr>";
@@ -3854,11 +3865,14 @@ app.get('/api/players', async (req, res) => {
     let gmAccounts = [];
 
     // acore
-    const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
+    //const gmQuery = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'";
     // tcore
     //const gmQuery = "SELECT GROUP_CONCAT(`AccountID` SEPARATOR ' ') as ids FROM `account_access` WHERE `SecurityLevel`>'0'";
+    //const gmResult = await realmDb.queryOne(gmQuery);
 
-    const gmResult = await realmDb.queryOne(gmQuery);
+    // Use gmQuery from config instead
+    const gmResult = await realmDb.queryOne(CONFIG.gmQuery);
+
     if (gmResult && gmResult.ids) {
         gmAccounts = gmResult.ids.split(' ');
         console.log(`[api] Found ${gmAccounts.length} GM accounts`);

@@ -6,8 +6,53 @@ const net = require('net');
 const app = express();
 const PORT = 5000;
 
+const ServerType = Object.freeze({
+  CMANGOS:      'cmangos',
+  CMANGOS_TBC:  'cmangos-tbc',
+  VMANGOS:      'vmangos',
+  MANGOSZERO:   'mangoszero'
+})
+
+//const SELECTED_SERVER = process.env.SELECTED_SERVER || ServerType.CMANGOS
+const SELECTED_SERVER = ServerType.CMANGOS_TBC
+
+const CoreNames = {
+  [ServerType.CMANGOS]:      ServerType.CMANGOS,
+  [ServerType.CMANGOS_TBC]:  ServerType.CMANGOS_TBC,
+  [ServerType.VMANGOS]:      ServerType.VMANGOS,
+  [ServerType.MANGOSZERO]:   ServerType.MANGOSZERO
+}
+
+const MYSQL_ROOT_PWD = process.env.MYSQL_ROOT_PWD || 'xxx'
+
+const DBNames = {
+  [ServerType.CMANGOS]: {
+    characters: 'classiccharacters',
+    world:      'classicmangos',
+    realm:      'classicrealmd'
+  },
+  [ServerType.CMANGOS_TBC]: {
+    characters: 'tbccharacters',
+    world:      'tbcmangos',
+    realm:      'tbcrealmd'
+  },
+  [ServerType.MANGOSZERO]: {
+    characters: 'character0',
+    world:      'mangos0',
+    realm:      'realmd0'
+  },
+  [ServerType.VMANGOS]: {
+    characters: 'vmangos_characters',
+    world:      'vmangos_mangos',
+    realm:      'vmangos_realmd'
+  }
+}
+
 // Configuration
 const CONFIG = {
+    selected_server: SELECTED_SERVER,
+    core_name:       CoreNames[SELECTED_SERVER],
+
     language: 'en',
     site_encoding: 'utf8',
     db_type: 'MySQL',
@@ -17,9 +62,9 @@ const CONFIG = {
     realm_db: {
         host: '127.0.0.1',
         port: 3306,
-        user: 'root',
-        password: 'xxx',
-        database: 'tbcrealmd',
+        user:     'root',
+        password: MYSQL_ROOT_PWD,
+        database: DBNames[SELECTED_SERVER].realm,
         charset: 'utf8'
     },
     
@@ -27,9 +72,9 @@ const CONFIG = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'xxx',
-            database: 'tbcmangos',
+            user:     'root',
+            password: MYSQL_ROOT_PWD,
+            database: DBNames[SELECTED_SERVER].world,
             charset: 'utf8'
         }
     },
@@ -38,9 +83,9 @@ const CONFIG = {
         1: {
             host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'xxx',
-            database: 'tbccharacters',
+            user:     'root',
+            password: MYSQL_ROOT_PWD,
+            database: DBNames[SELECTED_SERVER].characters,
             charset: 'utf8'
         }
     },
@@ -3396,14 +3441,14 @@ app.get('/', async (req, res) => {
                         az_player_count_a++;
                 }
 
-                if (!data[i].name.includes('(')) {
-                    console.log("[js] Found player in map: " + data[i].map);
-                    if (data[i].map === 530) {
-                        starting_map = 1;
-                    } else if (data[i].map === 571) {
-                        starting_map = 2;
-                    }
-                }
+                //if (!data[i].name.includes('(')) {
+                //    console.log("[js] Found player in map: " + data[i].map);
+                //    if (data[i].map === 530) {
+                //        starting_map = 1;
+                //    } else if (data[i].map === 571) {
+                //        starting_map = 2;
+                //    }
+                //}
 
                 // Fix player count
                 if (data[i].map == 530)
@@ -3529,7 +3574,7 @@ app.get('/', async (req, res) => {
             // Create tooltip content for total players
             var totalTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + total_players_count[1] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + total_players_count[0] + "</b></td></tr>";
             
-            document.getElementById("server_info").innerHTML='Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
+            document.getElementById("server_info").innerHTML=CONFIG.core_name + ' | Online: <b style="color: rgb(100,100,100);" onMouseMove="showTotalTooltip();" onMouseOut="h_tip();">Total</b> '+players_online_count+'';
 
             for(i = 0; i < maps_count; i++) {
                 var mapTooltip = "<tr><td><img src='" + CONFIG.img_base + "hordeicon.gif'></td><td><b style='color: rgb(210,50,30);'>Horde:</b> <b>" + horde_count[i] + "</b></td></tr><tr><td><img src='" + CONFIG.img_base + "allianceicon.gif'></td><td><b style='color: rgb(0,150,190);'>Alliance:</b> <b>" + alliance_count[i] + "</b></td></tr>";
