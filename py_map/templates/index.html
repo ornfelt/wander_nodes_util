@@ -1187,11 +1187,11 @@
         }
 
         function start() {
-            // Read the viewport size
+            // Fix zoom based on viewport size
             var w = window.innerWidth;
             var h = window.innerHeight;
-            console.log("Viewport size:", w + "×" + h);
-            if (w > 1430) {
+            console.log("Viewport size:", w + "x" + h);
+            if (h > 720) {
                 console.log("Setting zoom to 90%");
                 // Non-standard but works in all major browsers
                 document.documentElement.style.zoom = "90%";
