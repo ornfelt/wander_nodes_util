@@ -3790,16 +3790,26 @@ app.get('/', async (req, res) => {
             var w = window.innerWidth;
             var h = window.innerHeight;
             console.log("Viewport size:", w + "x" + h);
-            if (h > 720) {
-                console.log("Setting zoom to 90%");
+
+            // Better: fix based on physical pixel res...
+            var cssW = screen.width;
+            var cssH = screen.height;
+            // For *physical* pixel resolution, multiply by devicePixelRatio:
+            var physW = screen.width * window.devicePixelRatio;
+            var physH = screen.height * window.devicePixelRatio;
+
+            console.log("Screen (CSSpx): " + cssW + "×" + cssH + " - Physical(px): " + physW + "×" + physH);
+
+            if (physW > 2000) {
+                console.log("Setting zoom to 80%");
                 // Non-standard but works in all major browsers
-                document.documentElement.style.zoom = "90%";
+                document.documentElement.style.zoom = "80%";
                 // Could also use a standard-transform approach
                 // by wrapping everything in a container and doing:
                 //var wrap = document.getElementById("zoom-wrap");
-                //wrap.style.transform = "scale(0.9)";
+                //wrap.style.transform = "scale(0.8)";
                 //wrap.style.transformOrigin = "top left";
-                //wrap.style.width = (100/0.9) + "%";
+                //wrap.style.width = (100/0.8) + "%";
             }
 
             // Force grid mode to false at startup

@@ -1191,7 +1191,17 @@
             var w = window.innerWidth;
             var h = window.innerHeight;
             console.log("Viewport size:", w + "x" + h);
-            if (h > 720) {
+
+            // Better: fix based on physical pixel res...
+            var cssW = screen.width;
+            var cssH = screen.height;
+            // For *physical* pixel resolution, multiply by devicePixelRatio:
+            var physW = screen.width * window.devicePixelRatio;
+            var physH = screen.height * window.devicePixelRatio;
+
+            console.log("Screen (CSSpx): " + cssW + "×" + cssH + " - Physical(px): " + physW + "×" + physH);
+
+            if (physW > 2000) {
                 console.log("Setting zoom to 90%");
                 // Non-standard but works in all major browsers
                 document.documentElement.style.zoom = "90%";
