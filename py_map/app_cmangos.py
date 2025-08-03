@@ -17,7 +17,10 @@ class ServerType(Enum):
     MANGOSZERO  = 'mangoszero'
 
 #SELECTED_SERVER = os.getenv('SELECTED_SERVER', ServerType.CMANGOS.value)
-SELECTED_SERVER = ServerType.CMANGOS_TBC.value
+SELECTED_SERVER = ServerType.CMANGOS.value
+#SELECTED_SERVER = ServerType.CMANGOS_TBC.value
+#SELECTED_SERVER = ServerType.VMANGOS.value
+#SELECTED_SERVER = ServerType.MANGOSZERO.value
 
 CORE_NAME = SELECTED_SERVER
 
