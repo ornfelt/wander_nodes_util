@@ -3786,6 +3786,21 @@ app.get('/', async (req, res) => {
         }
 
         function start() {
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            console.log("Viewport size:", w + "×" + h);
+            if (w > 1430) {
+                console.log("Setting zoom to 80%");
+                // Non-standard but works in all major browsers
+                document.documentElement.style.zoom = "80%";
+                // Could also use a standard-transform approach
+                // by wrapping everything in a container and doing:
+                //var wrap = document.getElementById("zoom-wrap");
+                //wrap.style.transform = "scale(0.8)";
+                //wrap.style.transformOrigin = "top left";
+                //wrap.style.width = (100/0.8) + "%";
+            }
+
             // Force grid mode to false at startup
             var checkbox = document.getElementById('gridModeCheckbox');
             checkbox.checked = false;
