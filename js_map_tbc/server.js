@@ -42,7 +42,7 @@ const DBNames = {
   [ServerType.MANGOSZERO]: {
     characters: 'character0',
     world:      'mangos0',
-    realm:      'realmd0'
+    realm:      'realmd'
   },
   [ServerType.VMANGOS]: {
     characters: 'vmangos_characters',

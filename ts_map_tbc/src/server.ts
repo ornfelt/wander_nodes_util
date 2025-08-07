@@ -14,10 +14,10 @@ export enum ServerType {
 }
 
 //const SELECTED_SERVER = (process.env.SELECTED_SERVER as ServerType) ?? ServerType.CMANGOS;
-const SELECTED_SERVER = ServerType.CMANGOS;
+//const SELECTED_SERVER = ServerType.CMANGOS;
 //const SELECTED_SERVER = ServerType.CMANGOS_TBC;
 //const SELECTED_SERVER = ServerType.VMANGOS;
-//const SELECTED_SERVER = ServerType.MANGOSZERO;
+const SELECTED_SERVER = ServerType.MANGOSZERO;
 
 const MYSQL_ROOT_PWD = process.env.MYSQL_ROOT_PWD || 'xxx';
 
@@ -46,7 +46,7 @@ const DBNames: Record<ServerType, {
   [ServerType.MANGOSZERO]: {
     characters: 'character0',
     world:      'mangos0',
-    realm:      'realmd0',
+    realm:      'realmd',
   },
   [ServerType.VMANGOS]: {
     characters: 'vmangos_characters',

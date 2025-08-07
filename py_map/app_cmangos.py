@@ -17,8 +17,8 @@ class ServerType(Enum):
     MANGOSZERO  = 'mangoszero'
 
 #SELECTED_SERVER = os.getenv('SELECTED_SERVER', ServerType.CMANGOS.value)
-SELECTED_SERVER = ServerType.CMANGOS.value
-#SELECTED_SERVER = ServerType.CMANGOS_TBC.value
+#SELECTED_SERVER = ServerType.CMANGOS.value
+SELECTED_SERVER = ServerType.CMANGOS_TBC.value
 #SELECTED_SERVER = ServerType.VMANGOS.value
 #SELECTED_SERVER = ServerType.MANGOSZERO.value
 
@@ -40,7 +40,7 @@ DB_NAMES = {
     ServerType.MANGOSZERO.value: {
         'characters': 'character0',
         'world':      'mangos0',
-        'realm':      'realmd0'
+        'realm':      'realmd'
     },
     ServerType.VMANGOS.value: {
         'characters': 'vmangos_characters',
