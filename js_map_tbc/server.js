@@ -13,8 +13,8 @@ const ServerType = Object.freeze({
   MANGOSZERO:   'mangoszero'
 })
 
-//const SELECTED_SERVER = process.env.SELECTED_SERVER || ServerType.CMANGOS
-const SELECTED_SERVER = ServerType.CMANGOS
+const SELECTED_SERVER = process.env.SELECTED_SERVER || ServerType.CMANGOS
+//const SELECTED_SERVER = ServerType.CMANGOS
 //const SELECTED_SERVER = ServerType.CMANGOS_TBC
 //const SELECTED_SERVER = ServerType.VMANGOS
 //const SELECTED_SERVER = ServerTypeMANGOSZERO.

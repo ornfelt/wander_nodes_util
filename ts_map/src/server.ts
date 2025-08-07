@@ -11,8 +11,8 @@ export enum ServerType {
   TCORE = 'tcore',
 }
 
-//const SELECTED_SERVER: ServerType = (process.env.SELECTED_SERVER as ServerType) || ServerType.ACORE;
-const SELECTED_SERVER: ServerType = ServerType.TCORE;
+const SELECTED_SERVER: ServerType = (process.env.SELECTED_SERVER as ServerType) || ServerType.ACORE;
+//const SELECTED_SERVER: ServerType = ServerType.TCORE;
 
 const CoreNames: Record<ServerType, string> = {
   [ServerType.ACORE]: 'AzerothCore',
