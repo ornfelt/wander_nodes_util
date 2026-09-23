@@ -49,6 +49,22 @@ DB_NAMES = {
     }
 }
 
+# Character kinds reported to the client (keep in sync with the browser side)
+CHAR_KIND_PLAYER    = 0  # real player - that's you
+CHAR_KIND_NPCBOT    = 1  # NPCBots module bot
+CHAR_KIND_PLAYERBOT = 2  # Playerbots module bot
+
+# NPCBots live above this guid
+NPCBOT_GUID_MIN = 70000
+
+# Playerbots module accounts are named '<prefix>0', '<prefix>1', ...
+# (AiPlayerbot.RandomBotAccountPrefix in playerbots.conf)
+PLAYERBOT_ACCOUNT_PREFIX = os.getenv('PLAYERBOT_ACCOUNT_PREFIX', 'rndbot')
+PLAYERBOT_ACCOUNTS_QUERY = (
+    "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account` "
+    "WHERE `username` LIKE '" + PLAYERBOT_ACCOUNT_PREFIX + "%'"
+)
+
 # Configuration
 CONFIG = {
     'selected_server': SELECTED_SERVER,
@@ -2534,6 +2550,13 @@ def get_players():
     # Get GM accounts
     gm_accounts = []
 
+    # Get playerbot accounts
+    playerbot_accounts = []
+    playerbot_result = realm_db.query_one(PLAYERBOT_ACCOUNTS_QUERY)
+    if playerbot_result and playerbot_result['ids']:
+        playerbot_accounts = playerbot_result['ids'].split(' ')
+        print(f"[api] Found {len(playerbot_accounts)} playerbot accounts")
+
     # acore:
     #gm_query = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') as ids FROM `account_access` WHERE `gmlevel`>'0'"
     # tcore:
@@ -2579,7 +2602,7 @@ def get_players():
     
     bot_query = """
         SELECT `guid`, `account`, `name`, `class`, `race`, `level`, `gender`, 
-               `position_x`, `position_y`, `map`, `zone`, `extra_flags` 
+               `position_x`, `position_y`, `position_z`, `map`, `zone`, `extra_flags` 
         FROM `characters_playermap` 
         WHERE `online`='1' 
         ORDER BY `name`
@@ -2617,9 +2640,17 @@ def get_players():
         gm_player = False
         show_player = True
         
-        # Add bot identifier to name if guid > 70000
-        if character['guid'] > 70000:
+        # Add bot identifier to name if guid > NPCBOT_GUID_MIN
+        if character['guid'] > NPCBOT_GUID_MIN:
             character['name'] = f"{character['name']} ({character['guid']})"
+
+        # Tell real players, NPCBots and playerbots apart
+        if str(character['account']) in playerbot_accounts:
+            char_kind = CHAR_KIND_PLAYERBOT
+        elif character['guid'] > NPCBOT_GUID_MIN:
+            char_kind = CHAR_KIND_NPCBOT
+        else:
+            char_kind = CHAR_KIND_PLAYER
         
         # Check if player is GM
         if str(character['account']) in gm_accounts:
@@ -2652,6 +2683,8 @@ def get_players():
             'x': character['position_x'],
             'y': character['position_y'],
             'z': character['position_z'],
+            'guid': character['guid'],
+            'kind': char_kind,
             'dead': 0,  # TODO?
             'name': character['name'],
             'map': character['map'],

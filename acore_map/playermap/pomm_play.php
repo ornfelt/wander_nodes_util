@@ -9,6 +9,19 @@ $_RESULT = null;
 
 $maps_count = count($lang_defs['maps_names']);
 
+// Character kinds reported to the client (keep in sync with index.php)
+define('CHAR_KIND_PLAYER',    0); // real player - that's you
+define('CHAR_KIND_NPCBOT',    1); // NPCBots module bot
+define('CHAR_KIND_PLAYERBOT', 2); // Playerbots module bot
+
+// NPCBots live above this guid in `characters_playermap`
+define('NPCBOT_GUID_MIN', 70000);
+define('NPCBOT_TABLE', 'characters_playermap');
+
+// Playerbots module accounts are named '<prefix>0', '<prefix>1', ...
+// (AiPlayerbot.RandomBotAccountPrefix in playerbots.conf)
+define('PLAYERBOT_ACCOUNT_PREFIX', getenv('PLAYERBOT_ACCOUNT_PREFIX') ?: 'rndbot');
+
 $Horde_races = 0x2B2;
 $Alliance_races = 0x44D;
 $outland_inst   = array(540,542,543,544,545,546,547,548,550,552,553,554,555,556,557,558,559,562,564,565);
@@ -37,6 +50,15 @@ if ($query) {
         $gm_accounts = explode(' ', $result[0]);
     }
 }
+$playerbot_accounts = array();
+$query = $realm_db->query("SELECT GROUP_CONCAT(`id` SEPARATOR ' ') FROM `account` WHERE `username` LIKE '".PLAYERBOT_ACCOUNT_PREFIX."%'");
+if ($query) {
+    // GROUP_CONCAT gives NULL when no account matches the prefix
+    if (($result = $realm_db->fetch_row($query)) && $result[0] !== null) {
+        $playerbot_accounts = explode(' ', $result[0]);
+    }
+}
+
 $groups = array();
 $characters_db = new DBLayer($host, $user, $password, $db);
 if (!$characters_db->isValid()) {
@@ -58,9 +80,13 @@ for ($i = 0; $i < $maps_count; $i++) {
 }
 $arr = array();
 $i=$maps_count;
-//$query = $characters_db->query("SELECT `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-$query_players = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
-$query_bots = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`map`,`zone`,`extra_flags` FROM `characters_playermap` WHERE `online`='1' ORDER BY `name`");
+//$query = $characters_db->query("SELECT `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`position_z`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
+$query_players = $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`position_z`,`map`,`zone`,`extra_flags` FROM `characters` WHERE `online`='1' ORDER BY `name`");
+// NPCBots keep their characters in a table of their own - a playerbots server has none,
+// and querying a missing table poisons the connection for the queries that follow.
+$query_bot_table = $characters_db->query("SHOW TABLES LIKE '".NPCBOT_TABLE."'");
+$has_npcbot_table = $query_bot_table && $characters_db->num_rows($query_bot_table) > 0;
+$query_bots = $has_npcbot_table ? $characters_db->query("SELECT `guid`, `account`,`name`,`class`,`race`, `level`, `gender`, `position_x`,`position_y`,`position_z`,`map`,`zone`,`extra_flags` FROM `".NPCBOT_TABLE."` WHERE `online`='1' ORDER BY `name`") : false;
 
 $results_players = [];
 while ($row = $characters_db->fetch_assoc($query_players)) {
@@ -85,8 +111,17 @@ foreach ($mergedResults as $result) {
 
     $gm_player = false;
     $show_player = true;
-    if ($result['guid'] > 70000) {
+    if ($result['guid'] > NPCBOT_GUID_MIN) {
         $result['name'] = $result['name']." (".$result['guid'].")";
+    }
+
+    // Tell real players, NPCBots and playerbots apart
+    if (in_array($result['account'], $playerbot_accounts)) {
+        $char_kind = CHAR_KIND_PLAYERBOT;
+    } elseif ($result['guid'] > NPCBOT_GUID_MIN) {
+        $char_kind = CHAR_KIND_NPCBOT;
+    } else {
+        $char_kind = CHAR_KIND_PLAYER;
     }
 
     if (in_array($result['account'], $gm_accounts)) {
@@ -129,6 +164,9 @@ foreach ($mergedResults as $result) {
     $char_dead = ($char_flags & 0x11)?1:0;
     $arr[$i]['x'] = $result['position_x'];
     $arr[$i]['y'] = $result['position_y'];
+    $arr[$i]['z'] = $result['position_z'];
+    $arr[$i]['guid'] = $result['guid'];
+    $arr[$i]['kind'] = $char_kind;
     $arr[$i]['dead'] = $char_dead;
     $arr[$i]['name']=$result['name'];
     $arr[$i]['map']=$result['map'];

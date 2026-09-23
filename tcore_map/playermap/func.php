@@ -36,7 +36,13 @@ class DBLayer
             return false;
         }
 
-        $this->query_result = mysqli_query($this->link_id, $sql);
+        try {
+            $this->query_result = mysqli_query($this->link_id, $sql);
+        } catch (mysqli_sql_exception $e) {
+            // mysqli throws by default now, so honour the "false on failure" contract below.
+            // Hit e.g. by the NPCBots `characters_playermap` table on a playerbots server.
+            return false;
+        }
 
         if ($this->query_result) {
             ++$this->num_queries;

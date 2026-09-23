@@ -201,6 +201,17 @@ body {
     text-align: left;
     padding: 0px;
 }
+
+/* Pin holding the real player (you) - glows so it stands out among the bots */
+.main-player-pin {
+    z-index: 10;
+    animation: main-player-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes main-player-glow {
+    0%, 100% { filter: drop-shadow(0 0 2px #FFD700) drop-shadow(0 0 4px #FFD700); }
+    50%      { filter: drop-shadow(0 0 6px #FFF59D) drop-shadow(0 0 12px #FFD700); }
+}
 -->
 </style>
 </HEAD>
@@ -260,6 +271,15 @@ function _coord()
     this.y = 0;
 }
 
+// Character kinds sent by pomm_play.php (keep in sync with it)
+var CHAR_KIND_PLAYER    = 0; // real player - that's you
+var CHAR_KIND_NPCBOT    = 1; // NPCBots module bot
+var CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
+
+// Teleport commands copied to the clipboard when a pin is clicked
+var NPCBOT_GO_CMD = ".npcb go";
+var GO_XYZ_CMD    = ".go xyz";
+
 function _points() {
     this.map_id = 0;
     this.x = 0;
@@ -271,6 +291,24 @@ function _points() {
     this.multi_text = "";
     this.player = 0;
     this.Extention = 0;
+    this.position_x = 0;
+    this.position_y = 0;
+    this.position_z = 0;
+    this.guid = 0;
+    this.kind = CHAR_KIND_PLAYER;
+    this.has_player = 0;
+}
+
+// Highlight class for a pin holding the real player, so it stands out among the bots
+function pinClass(n) {
+    return (mpoints[n] && mpoints[n].has_player) ? ' class="main-player-pin"' : '';
+}
+
+// Teleport command to copy when the pin of a point is clicked
+function pointGoCommand(point) {
+    if (point.kind == CHAR_KIND_NPCBOT && point.guid)
+        return NPCBOT_GO_CMD + " " + point.guid;
+    return GO_XYZ_CMD + " " + point.position_x + " " + point.position_y + " " + point.position_z + " " + point.map_id;
 }
 
 function _multi_text() {
@@ -642,13 +680,11 @@ function show(data)
                 az_player_count_a++;
         }
 
-        if (!data[i].name.includes('(')) {
+        // Focus the map the real player (you) is on - bots never move the view
+        var isRealPlayer = (data[i].kind == CHAR_KIND_PLAYER);
+        if (isRealPlayer) {
             console.log("Found player in map: " + data[i].map);
-            if (data[i].map === '530') {
-                starting_map = 1;
-            } else if (data[i].map === '571') {
-                starting_map = 2;
-            }
+            starting_map = eval(data[i].Extention);
         }
 
         // Fix player count
@@ -693,6 +729,12 @@ function show(data)
             mpoints[point_count].gender = data[i].gender;
             mpoints[point_count].player = 1;
             mpoints[point_count].Extention = eval(data[i].Extention);
+            mpoints[point_count].guid = data[i].guid;
+            mpoints[point_count].kind = data[i].kind;
+            // raw world coords for the teleport command
+            mpoints[point_count].position_x = data[i].x;
+            mpoints[point_count].position_y = data[i].y;
+            mpoints[point_count].position_z = data[i].z;
             if(in_array(data[i].map, maps_array))
             {
                 mpoints[n].faction = faction;
@@ -716,6 +758,11 @@ function show(data)
             mpoints[n].player += 1;
             mpoints[n].single_text = '';
         }
+
+        // A pin holding the real player stays highlighted, even when bots share it
+        if (isRealPlayer) {
+            mpoints[n].has_player = 1;
+        }
         if(!in_array(mpoints[n].map_id, maps_array) && (mpoints[n].current_leaderGuid != data[i].leaderGuid || (data[i].leaderGuid == 0 && mpoints[n].player > 1)))
         {
             mpoints[n].multi_text.first_members.push(mpoints[n].player-1);
@@ -729,28 +776,28 @@ function show(data)
     while(n!=point_count)
     {
         if(!in_array(mpoints[n].map_id, maps_array))
-            instances[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
+            instances[mpoints[n].Extention] += '<img'+pinClass(n)+' src="<?php echo $img_base ?>inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;"\>';
         else if(mpoints[n].player > 1)
             // Add onclick
-            //groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
-            groups[mpoints[n].Extention] += '<img src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event); " \>';
+            //groups[mpoints[n].Extention] += '<img'+pinClass(n)+' src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" \>';
+            groups[mpoints[n].Extention] += '<img'+pinClass(n)+' src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+'); " \>';
         else
         {
             if(mpoints[n].faction)
                 point = "<?php echo $img_base ?>horde.gif";
             else
                 point = "<?php echo $img_base ?>allia.gif";
-            if (mpoints[n].name.includes('('))
+            if (mpoints[n].kind != CHAR_KIND_PLAYER)
             {
                 // Add onclick
-                //single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
-                single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+                //single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
+                single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event, '+n+'); "\>';
             }
             else
             {
                 // Show race gif instead of horde / allia gif for players
                 point = "<?php echo $img_base2; ?>" + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event); "\>';
+                single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event, '+n+'); "\>';
             }
         }
         n++;
@@ -1007,17 +1054,24 @@ function copy(text) {
     return result;
 }
 
-function onClickNode(e)
+function onClickNode(e, pointIndex)
 {
-    var t, data;
-    t=document.getElementById("tip");
+    // Copy the teleport command of the clicked pin
+    if (typeof pointIndex !== 'undefined' && mpoints[pointIndex]) {
+        var copy_text = pointGoCommand(mpoints[pointIndex]);
+        console.log("COPYING TEXT: " + copy_text);
+        copy(copy_text);
+        return;
+    }
+
+    // Fall back to the guid shown in the tooltip
+    var t = document.getElementById("tip");
     //console.log("TEST CLICK: " + e.target);
     //console.log("TEST CLICK: " + t.innerHTML);
-
 	if (t.innerHTML.includes('(')) {
 		const tip_split = t.innerHTML.split("(");
-		var copy_text = ".npcb go " + tip_split[1].split(")")[0];
-		console.log("COPYING TEXT: " + copy_text);
+		var copy_text = NPCBOT_GO_CMD + " " + tip_split[1].split(")")[0];
+		console.log("COPYING TEXT (fallback): " + copy_text);
 		copy(copy_text);
 	}
 }

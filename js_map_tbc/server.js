@@ -28,6 +28,19 @@ const CoreNames = {
 
 const MYSQL_ROOT_PWD = process.env.MYSQL_ROOT_PWD || 'xxx'
 
+// Character kinds reported to the client (keep in sync with the browser side)
+const CHAR_KIND_PLAYER    = 0; // real player - that's you
+const CHAR_KIND_NPCBOT    = 1; // NPCBots module bot
+const CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
+
+// NPCBots live above this guid
+const NPCBOT_GUID_MIN = 70000;
+
+// Playerbots module accounts are named '<prefix>0', '<prefix>1', ...
+// (AiPlayerbot.RandomBotAccountPrefix in playerbots.conf)
+const PLAYERBOT_ACCOUNT_PREFIX = process.env.PLAYERBOT_ACCOUNT_PREFIX || 'rndbot';
+const PLAYERBOT_ACCOUNTS_QUERY = "SELECT GROUP_CONCAT(`id` SEPARATOR ' ') AS ids FROM `account` WHERE `username` LIKE '" + PLAYERBOT_ACCOUNT_PREFIX + "%'";
+
 const DBNames = {
   [ServerType.CMANGOS]: {
     characters: 'classiccharacters',
@@ -2858,6 +2871,17 @@ app.get('/', async (req, res) => {
             cursor: pointer;
             user-select: none;
         }
+        /* Pin holding the real player (you) - glows so it stands out among the bots */
+        .main-player-pin {
+            z-index: 10;
+            animation: main-player-glow 1.4s ease-in-out infinite;
+        }
+
+        @keyframes main-player-glow {
+            0%, 100% { filter: drop-shadow(0 0 2px #FFD700) drop-shadow(0 0 4px #FFD700); }
+            50%      { filter: drop-shadow(0 0 6px #FFF59D) drop-shadow(0 0 12px #FFD700); }
+        }
+
     </style>
 </head>
 
@@ -2960,6 +2984,15 @@ app.get('/', async (req, res) => {
             this.y = 0;
         }
 
+        // Character kinds sent by the API (keep in sync with the server)
+        var CHAR_KIND_PLAYER    = 0; // real player - that's you
+        var CHAR_KIND_NPCBOT    = 1; // NPCBots module bot
+        var CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
+
+        // Teleport commands copied to the clipboard when a pin is clicked
+        var NPCBOT_GO_CMD = ".npcb go";
+        var GO_XYZ_CMD    = ".go xyz";
+
         function _points() {
             this.map_id = 0;
             this.x = 0;
@@ -2971,6 +3004,24 @@ app.get('/', async (req, res) => {
             this.multi_text = "";
             this.player = 0;
             this.Extention = 0;
+            this.position_x = 0;
+            this.position_y = 0;
+            this.position_z = 0;
+            this.guid = 0;
+            this.kind = CHAR_KIND_PLAYER;
+            this.has_player = 0;
+        }
+
+        // Highlight class for a pin holding the real player, so it stands out among the bots
+        function pinClass(n) {
+            return (mpoints[n] && mpoints[n].has_player) ? ' class="main-player-pin"' : '';
+        }
+
+        // Teleport command to copy when the pin of a point is clicked
+        function pointGoCommand(point) {
+            if (point.kind == CHAR_KIND_NPCBOT && point.guid)
+                return NPCBOT_GO_CMD + " " + point.guid;
+            return GO_XYZ_CMD + " " + point.position_x + " " + point.position_y + " " + point.position_z + " " + point.map_id;
         }
 
         function _multi_text() {
@@ -3282,11 +3333,11 @@ app.get('/', async (req, res) => {
                     var instX = instances_x[point.Extention][point.map_id];
                     var instY = instances_y[point.Extention][point.map_id];
                     
-                    instances[point.Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instX+'px; top: '+instY+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
+                    instances[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instX+'px; top: '+instY+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 } else {
                     // Player/bot points - use original positions
                     if(point.player > 1) {
-                        groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
+                        groups[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                     } else {
                         var pointImg;
                         if(point.faction)
@@ -3294,11 +3345,11 @@ app.get('/', async (req, res) => {
                         else
                             pointImg = CONFIG.img_base + "allia.gif";
                         
-                        if (point.name.includes('(')) {
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                        if (point.kind != CHAR_KIND_PLAYER) {
+                            single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         } else {
                             pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                            single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                            single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                         }
                     }
                 }
@@ -3329,9 +3380,9 @@ app.get('/', async (req, res) => {
                 var point = mpoints[n];
                 
                 if(!in_array(point.map_id, maps_array)) {
-                    instances[point.Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[point.Extention][point.map_id]+'px; top: '+instances_y[point.Extention][point.map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
+                    instances[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[point.Extention][point.map_id]+'px; top: '+instances_y[point.Extention][point.map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 } else if(point.player > 1) {
-                    groups[point.Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
+                    groups[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 } else {
                     var pointImg;
                     if(point.faction)
@@ -3339,11 +3390,11 @@ app.get('/', async (req, res) => {
                     else
                         pointImg = CONFIG.img_base + "allia.gif";
                     
-                    if (point.name.includes('(')) {
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                    if (point.kind != CHAR_KIND_PLAYER) {
+                        single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                        single[point.Extention] += '<img src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                        single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
             }
@@ -3444,14 +3495,12 @@ app.get('/', async (req, res) => {
                         az_player_count_a++;
                 }
 
-                //if (!data[i].name.includes('(')) {
-                //    console.log("[js] Found player in map: " + data[i].map);
-                //    if (data[i].map === 530) {
-                //        starting_map = 1;
-                //    } else if (data[i].map === 571) {
-                //        starting_map = 2;
-                //    }
-                //}
+                // Focus the map the real player (you) is on - bots never move the view
+                var isRealPlayer = (data[i].kind == CHAR_KIND_PLAYER);
+                if (isRealPlayer) {
+                    console.log("[js] Found player in map: " + data[i].map);
+                    starting_map = data[i].Extention;
+                }
 
                 // Fix player count
                 if (data[i].map == 530)
@@ -3493,6 +3542,8 @@ app.get('/', async (req, res) => {
                     mpoints[point_count].gender = data[i].gender;
                     mpoints[point_count].player = 1;
                     mpoints[point_count].Extention = data[i].Extention;
+                    mpoints[point_count].guid = data[i].guid;
+                    mpoints[point_count].kind = data[i].kind;
                     if(in_array(data[i].map, maps_array)) {
                         mpoints[n].faction = faction;
                         mpoints[point_count].single_text = data[i].zone+'<br>'+data[i].level+' lvl<br>'+char+'&nbsp;<img src="' + CONFIG.img_base2 + data[i].cl+'.gif" style="float:center" border="0" width="18" height="18"><br>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
@@ -3515,6 +3566,11 @@ app.get('/', async (req, res) => {
                     mpoints[n].player += 1;
                     mpoints[n].single_text = '';
                 }
+
+                // A pin holding the real player stays highlighted, even when bots share it
+                if (isRealPlayer) {
+                    mpoints[n].has_player = 1;
+                }
                 
                 if(!in_array(mpoints[n].map_id, maps_array) && (mpoints[n].current_leaderGuid != data[i].leaderGuid || (data[i].leaderGuid == 0 && mpoints[n].player > 1))) {
                     mpoints[n].multi_text.first_members.push(mpoints[n].player-1);
@@ -3527,9 +3583,9 @@ app.get('/', async (req, res) => {
             n=0;
             while(n!=point_count) {
                 if(!in_array(mpoints[n].map_id, maps_array))
-                    instances[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
+                    instances[mpoints[n].Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'inst-icon.gif" style="position: absolute; border: 0px; left: '+instances_x[mpoints[n].Extention][mpoints[n].map_id]+'px; top: '+instances_y[mpoints[n].Extention][mpoints[n].map_id]+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;">';
                 else if(mpoints[n].player > 1)
-                    groups[mpoints[n].Extention] += '<img src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
+                    groups[mpoints[n].Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 else {
                     var point;
                     if(mpoints[n].faction)
@@ -3537,12 +3593,12 @@ app.get('/', async (req, res) => {
                     else
                         point = CONFIG.img_base + "allia.gif";
                     
-                    if (mpoints[n].name.includes('(')) {
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                    if (mpoints[n].kind != CHAR_KIND_PLAYER) {
+                        single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     } else {
                         // Show race gif instead of horde / allia gif for players
                         point = CONFIG.img_base2 + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                        single[mpoints[n].Extention] += '<img src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
+                        single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
                 n++;
@@ -3864,14 +3920,9 @@ app.get('/', async (req, res) => {
         }
 
         function onClickNode(e, pointIndex) {
-            // If we were called with a valid pointIndex, use the stored XYZ
+            // Copy the teleport command of the clicked pin
             if (typeof pointIndex !== 'undefined' && mpoints[pointIndex]) {
-                var pt = mpoints[pointIndex];
-                var copyText = ".go xyz " 
-                + pt.position_x + " " 
-                + pt.position_y + " " 
-                + pt.position_z + " " 
-                + pt.map_id;
+                var copyText = pointGoCommand(mpoints[pointIndex]);
                 console.log("[js] COPYING TEXT:", copyText);
                 copy(copyText);
                 return;
@@ -3881,7 +3932,7 @@ app.get('/', async (req, res) => {
             var tipEl = document.getElementById("tip");
             if (tipEl.innerHTML.indexOf("(") !== -1) {
                 var guid = tipEl.innerHTML.split("(")[1].split(")")[0];
-                var copyText = ".npcb go " + guid;
+                var copyText = NPCBOT_GO_CMD + " " + guid;
                 console.log("[js] COPYING TEXT (fallback):", copyText);
                 copy(copyText);
             }
@@ -3918,6 +3969,15 @@ app.get('/api/players', async (req, res) => {
     
     // Get GM accounts
     let gmAccounts = [];
+
+    // Get playerbot accounts
+    let playerbotAccounts = [];
+    const playerbotResult = await realmDb.queryOne(PLAYERBOT_ACCOUNTS_QUERY);
+
+    if (playerbotResult && playerbotResult.ids) {
+        playerbotAccounts = playerbotResult.ids.split(' ');
+        console.log(`[api] Found ${playerbotAccounts.length} playerbot accounts`);
+    }
     
     // Get characters database connection
     const charDbConfig = CONFIG.characters_db[CONFIG.realm_id];
@@ -3979,9 +4039,17 @@ app.get('/api/players', async (req, res) => {
         let gmPlayer = false;
         let showPlayer = true;
         
-        // Add bot identifier to name if guid > 70000
-        if (character.guid > 70000) {
+        // Add bot identifier to name if guid > NPCBOT_GUID_MIN
+        if (character.guid > NPCBOT_GUID_MIN) {
             character.name = `${character.name} (${character.guid})`;
+        }
+
+        // Tell real players, NPCBots and playerbots apart
+        let charKind = CHAR_KIND_PLAYER;
+        if (playerbotAccounts.includes(character.account.toString())) {
+            charKind = CHAR_KIND_PLAYERBOT;
+        } else if (character.guid > NPCBOT_GUID_MIN) {
+            charKind = CHAR_KIND_NPCBOT;
         }
         
         // Check if player is GM
@@ -4023,6 +4091,8 @@ app.get('/api/players', async (req, res) => {
             x: character.position_x,
             y: character.position_y,
             z: character.position_z,
+            guid: character.guid,
+            kind: charKind,
             dead: 0, // TODO?
             name: character.name,
             map: character.map,
