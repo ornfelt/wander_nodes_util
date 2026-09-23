@@ -304,6 +304,13 @@ function pinClass(n) {
     return (mpoints[n] && mpoints[n].has_player) ? ' class="main-player-pin"' : '';
 }
 
+// Pin icon for a point - the race/gender portrait, faction pin if the race is unknown
+function pinImage(point) {
+    if (point.race > 0)
+        return "<?php echo $img_base2; ?>" + point.race + "-" + point.gender + ".gif";
+    return point.faction ? "<?php echo $img_base ?>horde.gif" : "<?php echo $img_base ?>allia.gif";
+}
+
 // Teleport command to copy when the pin of a point is clicked
 function pointGoCommand(point) {
     if (point.kind == CHAR_KIND_NPCBOT && point.guid)
@@ -783,22 +790,9 @@ function show(data)
             groups[mpoints[n].Extention] += '<img'+pinClass(n)+' src="<?php echo $img_base ?>group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+'); " \>';
         else
         {
-            if(mpoints[n].faction)
-                point = "<?php echo $img_base ?>horde.gif";
-            else
-                point = "<?php echo $img_base ?>allia.gif";
-            if (mpoints[n].kind != CHAR_KIND_PLAYER)
-            {
-                // Add onclick
-                //single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();"\>';
-                single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event, '+n+'); "\>';
-            }
-            else
-            {
-                // Show race gif instead of horde / allia gif for players
-                point = "<?php echo $img_base2; ?>" + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event, '+n+'); "\>';
-            }
+            // Players and bots alike get their race/gender portrait
+            point = pinImage(mpoints[n]);
+            single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip(); " onclick="onClickNode(event, '+n+'); "\>';
         }
         n++;
     }

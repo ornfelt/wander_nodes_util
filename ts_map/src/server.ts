@@ -3132,6 +3132,13 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             return (mpoints[n] && mpoints[n].has_player) ? ' class="main-player-pin"' : '';
         }
 
+        // Pin icon for a point - the race/gender portrait, faction pin if the race is unknown
+        function pinImage(point) {
+            if (point.race > 0)
+                return CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
+            return point.faction ? CONFIG.img_base + "horde.gif" : CONFIG.img_base + "allia.gif";
+        }
+
         // Teleport command to copy when the pin of a point is clicked
         function pointGoCommand(point) {
             if (point.kind == CHAR_KIND_NPCBOT && point.guid)
@@ -3454,18 +3461,9 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                     if(point.player > 1) {
                         groups[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                     } else {
-                        var pointImg;
-                        if(point.faction)
-                            pointImg = CONFIG.img_base + "horde.gif";
-                        else
-                            pointImg = CONFIG.img_base + "allia.gif";
-                        
-                        if (point.kind != CHAR_KIND_PLAYER) {
-                            single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                        } else {
-                            pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                            single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                        }
+                        // Players and bots alike get their race/gender portrait
+                        var pointImg = pinImage(point);
+                        single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                     }
                 }
             }
@@ -3499,18 +3497,9 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 } else if(point.player > 1) {
                     groups[point.Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 } else {
-                    var pointImg;
-                    if(point.faction)
-                        pointImg = CONFIG.img_base + "horde.gif";
-                    else
-                        pointImg = CONFIG.img_base + "allia.gif";
-                    
-                    if (point.kind != CHAR_KIND_PLAYER) {
-                        single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                    } else {
-                        pointImg = CONFIG.img_base2 + point.race + "-" + point.gender + ".gif";
-                        single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                    }
+                    // Players and bots alike get their race/gender portrait
+                    var pointImg = pinImage(point);
+                    single[point.Extention] += '<img'+pinClass(n)+' src="'+pointImg+'" style="position: absolute; border: 0px; left: '+point.x+'px; top: '+point.y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                 }
             }
             
@@ -3702,19 +3691,9 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                 else if(mpoints[n].player > 1)
                     groups[mpoints[n].Extention] += '<img'+pinClass(n)+' src="' + CONFIG.img_base + 'group-icon.gif" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],1,false);" onMouseDown="tip(mpoints['+n+'],1,true);" onMouseOut="h_tip();mpoints['+n+'].multi_text.current=0;" onclick="onClickNode(event, '+n+');">';
                 else {
-                    var point;
-                    if(mpoints[n].faction)
-                        point = CONFIG.img_base + "horde.gif";
-                    else
-                        point = CONFIG.img_base + "allia.gif";
-                    
-                    if (mpoints[n].kind != CHAR_KIND_PLAYER) {
-                        single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                    } else {
-                        // Show race gif instead of horde / allia gif for players
-                        point = CONFIG.img_base2 + mpoints[n].race + "-" + mpoints[n].gender + ".gif";
-                        single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
-                    }
+                    // Players and bots alike get their race/gender portrait
+                    var point = pinImage(mpoints[n]);
+                    single[mpoints[n].Extention] += '<img'+pinClass(n)+' src="'+point+'" style="position: absolute; border: 0px; left: '+mpoints[n].x+'px; top: '+mpoints[n].y+'px; width: 1.5%; height: auto;" onMouseMove="tip(mpoints['+n+'],0,false);" onMouseOut="h_tip();" onclick="onClickNode(event, '+n+');">';
                 }
                 n++;
             }
