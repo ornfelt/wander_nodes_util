@@ -307,6 +307,10 @@ var CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
 var NPCBOT_GO_CMD = ".npcb go";
 var GO_XYZ_CMD    = ".go xyz";
 
+// The page is laid out taller than a screen, so shrink it on load rather than
+// leaving it to a manual browser zoom. Set to "100%" to turn this off.
+var PAGE_ZOOM = "90%";
+
 // Gap between the cursor and a tooltip sitting above it
 var TIP_CURSOR_GAP = 8;
 
@@ -393,12 +397,29 @@ function getBodyScrollLeft()
     return self.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft);
 }
 
-// Height the tooltip has to fit in. Not document.body.clientHeight: every body
-// child here is positioned, so the body measures nothing and anything budgeted
-// from it came out empty.
+// start() zooms the whole document. Mouse coordinates stay in screen pixels
+// while offsetHeight and clientHeight are layout pixels, so measure the ratio
+// between the two rather than assuming there is none.
+var page_zoom = null;
+
+function pageZoom()
+{
+    if (page_zoom === null)
+    {
+        var probe = document.getElementById("world");
+        var width = (probe && probe.getBoundingClientRect) ? probe.getBoundingClientRect().width : 0;
+        page_zoom = (width && probe.offsetWidth) ? width / probe.offsetWidth : 1;
+    }
+    return page_zoom;
+}
+
+// Height the tooltip has to fit in, in the same pixels it is laid out in. Not
+// document.body.clientHeight: every body child here is positioned, so the body
+// measures nothing and anything budgeted from it came out empty.
 function viewportHeight()
 {
-    return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 0;
+    var height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 0;
+    return height / pageZoom();
 }
 
 function get_tipxy(tip_width, tip_height, x1, y1)
@@ -476,14 +497,20 @@ function tip(object, type, onClick)
         pointx = window.event.clientX + document.documentElement.scrollLeft + document.body.scrollLeft;
         pointy = window.event.clientY + document.documentElement.scrollTop + document.body.scrollTop;
     }
+
+    // Placement below works in layout pixels, the mouse reports screen ones
+    var zoom = pageZoom();
+    var mouseX = pointx / zoom;
+    var mouseY = pointy / zoom;
+
     switch(type)
     {
     case 2:
         // Render first so the height is known, then sit just above the cursor
         t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class=\'tip_worldinfo\'\>'+object+'</table\>';
         tipxy = new _coord();
-        tipxy.x = pointx+15;
-        tipxy.y = Math.max(TIP_CURSOR_GAP, pointy - t.offsetHeight - TIP_CURSOR_GAP);
+        tipxy.x = mouseX+15;
+        tipxy.y = Math.max(TIP_CURSOR_GAP, mouseY - t.offsetHeight - TIP_CURSOR_GAP);
         break;
     case 1:
         if(onClick || t.innerHTML == '')
@@ -491,13 +518,13 @@ function tip(object, type, onClick)
             data = getMultiText(object.multi_text, onClick);
             t.innerHTML='<table border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_header\'\><td colspan=\'7\'\>'+object.zone+'</td\></tr\><tr class=\'tip_head_text\'\><td align=\'center\'\>#</td\><td\>&nbsp;<?php echo $lang_defs['name'];?></td\><td width=\'25\' align=\'center\'\><?php echo $lang_defs['level'];?></td\><td colspan=\'2\'\><?php echo $lang_defs['race'];?></td\><td colspan=\'2\'\>&nbsp;<?php echo $lang_defs['class'];?></td\></tr\>'+data+'<\/table\>';
         }
-        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, mouseX, mouseY);
         break;
     case 0:
         if(object.faction) {color='#D2321E';}
         else {color='#0096BE';}
         t.innerHTML='<table width=\'100\' border=\'0\' cellspacing=\'0\' cellpadding=\'0\'\><tr class=\'tip_text\'\><td\>&nbsp;'+object.name+'&nbsp;</td\></tr\><tr bgcolor=\''+color+'\'\><td height=\'1px\'\></td\></tr\><tr\><td\><table width=100% border=\'0\' cellspacing=\'0\' cellpadding=\'3\'\><tr class=\'tip_text\'\><td\>'+object.single_text+'</td\></tr\><\/table\></td\></tr\><\/table\>';
-        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, pointx, pointy);
+        tipxy = get_tipxy(t.offsetWidth, t.offsetHeight, mouseX, mouseY);
         break;
     }
     t.style.left=tipxy.x + "px";
@@ -1092,6 +1119,9 @@ function display()
 
 function start()
 {
+    // Non-standard but works in all major browsers
+    document.documentElement.style.zoom = PAGE_ZOOM;
+
     reset();
     //display();
 
