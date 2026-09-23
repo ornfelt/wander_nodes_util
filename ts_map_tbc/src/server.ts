@@ -3232,14 +3232,8 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             tipxy = new _coord();
             tipxy.x = 5;
             tipxy.y = 5;
-            var wd, ht;
-            if(document.layers) {
-                wd = innerWidth;
-                ht = innerHeight;
-            } else {
-                wd = document.body.clientWidth;
-                ht = document.body.clientHeight;
-            }
+            var wd = document.body.clientWidth;
+            var ht = viewportHeight();
             
             // Position tooltip slightly above and to the right of mouse
             if(x1+tip_width+15 < wd)
@@ -3264,16 +3258,11 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             if(onClick) {
                 multitext.current = multitext.next;
             }
-            var ht;
-            if(document.layers) {
-                ht = innerHeight;
-            } else {
-                ht = document.body.clientHeight;
-            }
+            var ht = viewportHeight();
             var length = multitext.text.length - multitext.current;
             var count = length;
             if((20+length*22) > ht*0.8) {
-                count = Math.round((ht*0.8 - 20)/22);
+                count = Math.max(1, Math.round((ht*0.8 - 20)/22));
                 multitext.next = multitext.current + count;
                 if(multitext.next == multitext.text.length)
                     multitext.next = 0;
@@ -3293,6 +3282,15 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
             else if(multitext.current > 0)
                 data += '<tr class="tip_text"><td align="left" colspan="7">&nbsp;<<<&nbsp;Click to first&nbsp;<<<</td></tr>';
             return data;
+        }
+
+        // Height the tooltip has to fit in, in the same pixels it is laid out in.
+        // Not document.body.clientHeight: every body child is positioned except
+        // #info_bottom, whose 1650px top margin collapses out, so the body
+        // measures a few dozen pixels and anything budgeted from it came out empty.
+        function viewportHeight() {
+            var height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 0;
+            return height / pageZoom();
         }
 
         // start() zooms the whole document on wide screens. Mouse coordinates stay

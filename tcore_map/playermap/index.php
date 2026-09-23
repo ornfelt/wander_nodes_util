@@ -393,21 +393,21 @@ function getBodyScrollLeft()
     return self.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft);
 }
 
+// Height the tooltip has to fit in. Not document.body.clientHeight: every body
+// child here is positioned, so the body measures nothing and anything budgeted
+// from it came out empty.
+function viewportHeight()
+{
+    return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 0;
+}
+
 function get_tipxy(tip_width, tip_height, x1, y1)
 {
     tipxy = new _coord();
     tipxy.x = 5;
     tipxy.y = 5;
-    if(document.layers)
-    {
-        wd = innerWidth;
-        ht = innerHeight;
-    }
-    else
-    {
-        wd = document.body.clientWidth;
-        ht = document.body.clientHeight;
-    }
+    wd = document.body.clientWidth;
+    ht = viewportHeight();
     if(x1+tip_width+15 < wd)
         tipxy.x = x1+15;
     else if(x1-tip_width-15 > 0)
@@ -431,19 +431,12 @@ function getMultiText(multitext, onClick)
     {
         multitext.current = multitext.next;
     }
-    if(document.layers)
-    {
-        ht = innerHeight;
-    }
-    else
-    {
-        ht = document.body.clientHeight;
-    }
+    ht = viewportHeight();
     var length = multitext.text.length - multitext.current;
     count = length;
     if((20+length*22) > ht*0.8)
     {
-        count = Math.round((ht*0.8 - 20)/22);
+        count = Math.max(1, Math.round((ht*0.8 - 20)/22));
         multitext.next = multitext.current + count;
         if(multitext.next == multitext.text.length)
             multitext.next = 0;

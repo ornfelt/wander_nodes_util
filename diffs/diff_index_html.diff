@@ -1,5 +1,5 @@
 ﻿diff --git a/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index.html b/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index_cmangos.html
-index d8e9aeb..0461e2b 100644
+index 7fd8182..441be29 100644
 --- a/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index.html
 +++ b/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index_cmangos.html
 @@ -375,10 +375,12 @@
@@ -19,7 +19,7 @@ index d8e9aeb..0461e2b 100644
          
          var show_time = {{ config.map_show_time }};
          var show_status = {{ config.map_show_status }};
-@@ -1046,15 +1048,16 @@
+@@ -1044,15 +1046,16 @@
                      mpoints[point_count].Extention = data[i].Extention;
                      mpoints[point_count].guid = data[i].guid;
                      mpoints[point_count].kind = data[i].kind;
@@ -40,7 +40,7 @@ index d8e9aeb..0461e2b 100644
                      } else {
                          mpoints[point_count].single_text='';
                          mpoints[point_count].x = 0;
-@@ -1423,11 +1426,25 @@
+@@ -1421,11 +1424,25 @@
                  return;
              }
  
