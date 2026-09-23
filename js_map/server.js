@@ -2872,7 +2872,7 @@ app.get('/', async (req, res) => {
         /* Toast confirming what a pin click put on the clipboard */
         #toast {
             position: fixed;
-            left: 50%;
+            right: 20px;
             bottom: 40px;
             z-index: 500;
             max-width: 80%;
@@ -2886,14 +2886,14 @@ app.get('/', async (req, res) => {
             text-align: center;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
             opacity: 0;
-            transform: translateX(-50%) translateY(10px);
+            transform: translateY(10px);
             transition: opacity 0.25s ease, transform 0.25s ease;
             pointer-events: none;
         }
 
         #toast.toast-visible {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -3158,6 +3158,20 @@ app.get('/', async (req, res) => {
             return data;
         }
 
+        // start() zooms the whole document on wide screens. Mouse coordinates stay
+        // in screen pixels while offsetHeight and clientHeight are layout pixels,
+        // so measure the ratio between the two rather than assuming there is none.
+        var page_zoom = null;
+
+        function pageZoom() {
+            if (page_zoom === null) {
+                var probe = document.getElementById("world");
+                var width = (probe && probe.getBoundingClientRect) ? probe.getBoundingClientRect().width : 0;
+                page_zoom = (width && probe.offsetWidth) ? width / probe.offsetWidth : 1;
+            }
+            return page_zoom;
+        }
+
         function tip(object, type, onClick) {
             var t, data;
             var tipxy;
@@ -3175,6 +3189,11 @@ app.get('/', async (req, res) => {
                 mouseY = pointy || 0;
             }
             
+            // Placement below works in layout pixels, the mouse reports screen ones
+            var zoom = pageZoom();
+            mouseX = mouseX / zoom;
+            mouseY = mouseY / zoom;
+
             switch(type) {
             case 2:
                 // Render first so the height is known, then sit just above the cursor

@@ -216,7 +216,7 @@ body {
 /* Toast confirming what a pin click put on the clipboard */
 #toast {
     position: fixed;
-    left: 50%;
+    right: 20px;
     bottom: 40px;
     z-index: 500;
     max-width: 80%;
@@ -230,14 +230,14 @@ body {
     text-align: center;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateY(10px);
     transition: opacity 0.25s ease, transform 0.25s ease;
     pointer-events: none;
 }
 
 #toast.toast-visible {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 -->
 </style>
