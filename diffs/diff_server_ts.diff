@@ -1,5 +1,5 @@
 ﻿diff --git a/C:/Users/jonas//Code2/Python/wander_nodes_util/ts_map/src/server.ts b/C:/Users/jonas//Code2/Python/wander_nodes_util/ts_map_tbc/src/server.ts
-index 816fe15..5ed6a19 100644
+index 2d00440..83470d9 100644
 --- a/C:/Users/jonas//Code2/Python/wander_nodes_util/ts_map/src/server.ts
 +++ b/C:/Users/jonas//Code2/Python/wander_nodes_util/ts_map_tbc/src/server.ts
 @@ -7,41 +7,33 @@ const app = express();
@@ -153,7 +153,7 @@ index 816fe15..5ed6a19 100644
      
      // GM and map settings
      gm_online: true,
-@@ -3653,7 +3662,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
+@@ -3735,7 +3744,7 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
                          mpoints[point_count].single_text = data[i].zone+'<br>'+data[i].level+' lvl<br>'+char+'&nbsp;<img src="' + CONFIG.img_base2 + data[i].cl+'.gif" style="float:center" border="0" width="18" height="18"><br>'+race_name[data[i].race]+'<br/>'+class_name[data[i].cl]+'<br/>';
                          mpoints[point_count].x = pos.x;
                          mpoints[point_count].y = pos.y;
@@ -162,16 +162,18 @@ index 816fe15..5ed6a19 100644
                          mpoints[point_count].position_x = data[i].x;
                          mpoints[point_count].position_y = data[i].y;
                          mpoints[point_count].position_z = data[i].z;
-@@ -4016,19 +4025,19 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
+@@ -4098,21 +4107,21 @@ app.get('/', async (req: Request, res: Response): Promise<void> => {
          function onClickNode(e, pointIndex) {
              // Copy the teleport command of the clicked pin
              if (typeof pointIndex !== 'undefined' && mpoints[pointIndex]) {
 -                var copy_text = pointGoCommand(mpoints[pointIndex]);
 -                console.log("[js] COPYING TEXT: " + copy_text);
 -                copy(copy_text);
+-                showToast("<b>" + mpoints[pointIndex].name + "</b><br>" + copy_text + " has been copied");
 +                var copyText = pointGoCommand(mpoints[pointIndex]);
 +                console.log("[js] COPYING TEXT:", copyText);
 +                copy(copyText);
++                showToast("<b>" + mpoints[pointIndex].name + "</b><br>" + copyText + " has been copied");
                  return;
              }
  
@@ -182,6 +184,7 @@ index 816fe15..5ed6a19 100644
 -                var copy_text = NPCBOT_GO_CMD + " " + tip_split[1].split(")")[0];
 -                console.log("[js] COPYING TEXT (fallback): " + copy_text);
 -                copy(copy_text);
+-                showToast(copy_text + " has been copied");
 +            // Otherwise fall back to your old GUID logic:
 +            var tipEl = document.getElementById("tip");
 +            if (tipEl.innerHTML.indexOf("(") !== -1) {
@@ -189,10 +192,11 @@ index 816fe15..5ed6a19 100644
 +                var copyText = NPCBOT_GO_CMD + " " + guid;
 +                console.log("[js] COPYING TEXT (fallback):", copyText);
 +                copy(copyText);
++                showToast(copyText + " has been copied");
              }
          }
          
-@@ -4064,14 +4073,6 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
+@@ -4148,14 +4157,6 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
      
      // Get GM accounts
      let gmAccounts: string[] = [];
@@ -207,7 +211,7 @@ index 816fe15..5ed6a19 100644
  
      // Get playerbot accounts
      let playerbotAccounts: string[] = [];
-@@ -4118,24 +4119,12 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
+@@ -4202,24 +4203,12 @@ app.get('/api/players', async (req: Request, res: Response): Promise<void> => {
          ORDER BY \`name\`
      `;
      

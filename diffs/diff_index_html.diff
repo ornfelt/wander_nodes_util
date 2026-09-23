@@ -1,8 +1,8 @@
 ﻿diff --git a/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index.html b/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index_cmangos.html
-index bc0c9db..92c0c35 100644
+index 0354777..6745961 100644
 --- a/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index.html
 +++ b/C:/Users/jonas//Code2/Python/wander_nodes_util/py_map/templates/index_cmangos.html
-@@ -348,10 +348,12 @@
+@@ -375,10 +375,12 @@
          // Configuration variables from Flask
          var current_map = 0;
          
@@ -19,7 +19,7 @@ index bc0c9db..92c0c35 100644
          
          var show_time = {{ config.map_show_time }};
          var show_status = {{ config.map_show_status }};
-@@ -945,15 +947,16 @@
+@@ -1027,15 +1029,16 @@
                      mpoints[point_count].Extention = data[i].Extention;
                      mpoints[point_count].guid = data[i].guid;
                      mpoints[point_count].kind = data[i].kind;
@@ -40,7 +40,7 @@ index bc0c9db..92c0c35 100644
                      } else {
                          mpoints[point_count].single_text='';
                          mpoints[point_count].x = 0;
-@@ -1296,11 +1299,24 @@
+@@ -1379,11 +1382,25 @@
                  return;
              }
  
@@ -58,6 +58,7 @@ index bc0c9db..92c0c35 100644
 +                        var copy_text = pointGoCommand(mpoints[i]);
 +                        console.log("[js] COPYING TEXT: " + copy_text);
 +                        copy(copy_text);
++                        showToast("<b>" + mpoints[i].name + "</b><br>" + copy_text + " has been copied");
 +                        return;
 +                    }
 +                }
@@ -66,4 +67,4 @@ index bc0c9db..92c0c35 100644
 +                var copy_text = NPCBOT_GO_CMD + " " + guid;
                  console.log("[js] COPYING TEXT (fallback): " + copy_text);
                  copy(copy_text);
-             }
+                 showToast(copy_text + " has been copied");

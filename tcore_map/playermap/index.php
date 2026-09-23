@@ -212,6 +212,33 @@ body {
     0%, 100% { filter: drop-shadow(0 0 2px #FFD700) drop-shadow(0 0 4px #FFD700); }
     50%      { filter: drop-shadow(0 0 6px #FFF59D) drop-shadow(0 0 12px #FFD700); }
 }
+
+/* Toast confirming what a pin click put on the clipboard */
+#toast {
+    position: fixed;
+    left: 50%;
+    bottom: 40px;
+    z-index: 500;
+    max-width: 80%;
+    padding: 10px 16px;
+    border: 1px solid #EABA28;
+    border-radius: 6px;
+    background: rgba(20, 20, 20, 0.92);
+    color: #FFD700;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 13px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+#toast.toast-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
 -->
 </style>
 </HEAD>
@@ -280,6 +307,16 @@ var CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
 var NPCBOT_GO_CMD = ".npcb go";
 var GO_XYZ_CMD    = ".go xyz";
 
+// Gap between the cursor and a tooltip sitting above it
+var TIP_CURSOR_GAP = 8;
+
+// Decimals kept in a '.go xyz' command - the float tail is noise
+var GO_COORD_DECIMALS = 2;
+
+// How long the copy confirmation toast stays up
+var TOAST_DURATION_MS = 2500;
+var toast_timer = null;
+
 function _points() {
     this.map_id = 0;
     this.x = 0;
@@ -311,11 +348,27 @@ function pinImage(point) {
     return point.faction ? "<?php echo $img_base ?>horde.gif" : "<?php echo $img_base ?>allia.gif";
 }
 
+function goCoord(value) {
+    return Number(value).toFixed(GO_COORD_DECIMALS);
+}
+
 // Teleport command to copy when the pin of a point is clicked
 function pointGoCommand(point) {
     if (point.kind == CHAR_KIND_NPCBOT && point.guid)
         return NPCBOT_GO_CMD + " " + point.guid;
-    return GO_XYZ_CMD + " " + point.position_x + " " + point.position_y + " " + point.position_z + " " + point.map_id;
+    return GO_XYZ_CMD + " " + goCoord(point.position_x) + " " + goCoord(point.position_y) + " " + goCoord(point.position_z) + " " + point.map_id;
+}
+
+// Briefly confirm what a pin click put on the clipboard
+function showToast(text) {
+    var el = document.getElementById("toast");
+    if (!el)
+        return;
+    el.innerHTML = text;
+    el.classList.add("toast-visible");
+    if (toast_timer)
+        clearTimeout(toast_timer);
+    toast_timer = setTimeout(function() { el.classList.remove("toast-visible"); }, TOAST_DURATION_MS);
 }
 
 function _multi_text() {
@@ -433,10 +486,11 @@ function tip(object, type, onClick)
     switch(type)
     {
     case 2:
+        // Render first so the height is known, then sit just above the cursor
+        t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class=\'tip_worldinfo\'\>'+object+'</table\>';
         tipxy = new _coord();
         tipxy.x = pointx+15;
-        tipxy.y = pointy-60;
-        t.innerHTML='<table width="120" border="0" cellspacing="0" cellpadding="0" class=\'tip_worldinfo\'\>'+object+'</table\>';
+        tipxy.y = Math.max(TIP_CURSOR_GAP, pointy - t.offsetHeight - TIP_CURSOR_GAP);
         break;
     case 1:
         if(onClick || t.innerHTML == '')
@@ -592,6 +646,34 @@ function switchworld(n)
             obj_points_layer.style.visibility = "hidden";
         }
     }
+}
+
+// The map you picked yourself; -1 means the view follows your character.
+// Parked in sessionStorage so the periodic page reload does not lose it.
+var SELECTED_MAP_KEY = "playermap_selected_map";
+var selected_map = readSelectedMap();
+
+function readSelectedMap() {
+    try {
+        var stored = sessionStorage.getItem(SELECTED_MAP_KEY);
+        return stored === null ? -1 : parseInt(stored, 10);
+    } catch (e) {
+        return -1;
+    }
+}
+
+function selectWorld(n) {
+    selected_map = n;
+    try {
+        sessionStorage.setItem(SELECTED_MAP_KEY, n);
+    } catch (e) {
+    }
+    switchworld(n);
+}
+
+// Map an update should show: your own pick when you made one, else fallback
+function activeWorld(fallback) {
+    return selected_map >= 0 ? selected_map : fallback;
 }
 
 
@@ -829,10 +911,10 @@ function show(data)
 
     for(i = 0; i < maps_count; i++)
     {
-        document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="switchworld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
+        document.getElementById("server_info").innerHTML += '&nbsp;<b style="color: rgb(160,160,20); cursor:pointer;" onClick="selectWorld('+i+');" onMouseMove="tip(\'<tr\><td\><img src=\\\'<?php echo $img_base ?>hordeicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(210,50,30);\\\'\><?php echo $lang_defs['faction'][1]; ?>:</b\> <b\>'+horde_count[i]+'</b\></td\></tr\><tr\><td\><img src=\\\'<?php echo $img_base ?>allianceicon.gif\\\'\></td\><td\><b style=\\\'color: rgb(0,150,190);\\\'\><?php echo $lang_defs['faction'][0]; ?>:</b\> <b\>'+alliance_count[i]+'</b\></td\></tr\>\',2,false);" onMouseOut="h_tip();">'+maps_name_array[i]+'</b\> '+players_count[i]+'';
     }
-    // Starting map to show: outland (1) / northrend (2)
-    switchworld(starting_map);
+    // Show the map you picked, else the one your character is on
+    switchworld(activeWorld(starting_map));
 }
 
 function statusController(status_process_id,diff)
@@ -1055,6 +1137,7 @@ function onClickNode(e, pointIndex)
         var copy_text = pointGoCommand(mpoints[pointIndex]);
         console.log("COPYING TEXT: " + copy_text);
         copy(copy_text);
+        showToast("<b>" + mpoints[pointIndex].name + "</b><br>" + copy_text + " has been copied");
         return;
     }
 
@@ -1067,6 +1150,7 @@ function onClickNode(e, pointIndex)
 		var copy_text = NPCBOT_GO_CMD + " " + tip_split[1].split(")")[0];
 		console.log("COPYING TEXT (fallback): " + copy_text);
 		copy(copy_text);
+		showToast(copy_text + " has been copied");
 	}
 }
 
@@ -1079,6 +1163,7 @@ function onClickNode(e, pointIndex)
     </table>
 </div>
 <div id="tip"></div>
+<div id="toast"></div>
 <div ID="pointsOldworld"></div>
 <div ID="pointsOutland"></div>
 <div ID="pointsNorthrend"></div>
