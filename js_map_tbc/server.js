@@ -36,6 +36,17 @@ const CHAR_KIND_PLAYERBOT = 2; // Playerbots module bot
 // NPCBots live above this guid
 const NPCBOT_GUID_MIN = 70000;
 
+// vmangos wandering bots are never saved to `characters`: the server writes the online ones to
+// `characters_playermap` (WanderBot.PlayerMapInterval in mangosd.conf)
+const WANDER_BOT_SERVERS = [ServerType.VMANGOS];
+const WANDER_BOT_QUERY = `
+    SELECT \`guid\`, \`account\`, \`name\`, \`class\`, \`race\`, \`level\`, \`gender\`,
+           \`position_x\`, \`position_y\`, \`position_z\`, \`map\`, \`zone\`, \`extra_flags\`, \`dead\`
+    FROM \`characters_playermap\`
+    WHERE \`online\`='1'
+    ORDER BY \`name\`
+`;
+
 // Playerbots module accounts are named '<prefix>0', '<prefix>1', ...
 // (AiPlayerbot.RandomBotAccountPrefix in playerbots.conf)
 const PLAYERBOT_ACCOUNT_PREFIX = process.env.PLAYERBOT_ACCOUNT_PREFIX || 'rndbot';
@@ -3019,6 +3030,7 @@ app.get('/', async (req, res) => {
         // Teleport commands copied to the clipboard when a pin is clicked
         var NPCBOT_GO_CMD = ".npcb go";
         var GO_XYZ_CMD    = ".go xyz";
+        var GONAME_CMD    = ".goname";
 
         // Gap between the cursor and a tooltip sitting above it
         var TIP_CURSOR_GAP = 8;
@@ -3065,10 +3077,22 @@ app.get('/', async (req, res) => {
             return Number(value).toFixed(GO_COORD_DECIMALS);
         }
 
+        // Character name without the " (guid)" the server appends to bots above NPCBOT_GUID_MIN
+        function characterName(name) {
+            var suffix = name.lastIndexOf(" (");
+            if (suffix > 0 && name.charAt(name.length - 1) == ")")
+                return name.substring(0, suffix);
+            return name;
+        }
+
         // Teleport command to copy when the pin of a point is clicked
         function pointGoCommand(point) {
             if (point.kind == CHAR_KIND_NPCBOT && point.guid)
                 return NPCBOT_GO_CMD + " " + point.guid;
+            // Playerbots (wandering bots too) are online players that keep moving: go to them by name, not to
+            // where they were at the last refresh
+            if (point.kind == CHAR_KIND_PLAYERBOT && point.name)
+                return GONAME_CMD + " " + characterName(point.name);
             return GO_XYZ_CMD + " " + goCoord(point.position_x) + " " + goCoord(point.position_y) + " " + goCoord(point.position_z) + " " + point.map_id;
         }
 
@@ -4100,6 +4124,16 @@ app.get('/api/players', async (req, res) => {
     
     // Merge results
     const mergedResults = [...playersResult];
+
+    // Wandering bots, marked so the loop below tells them apart from players
+    if (WANDER_BOT_SERVERS.includes(SELECTED_SERVER)) {
+        const wanderBotsResult = await charactersDb.query(WANDER_BOT_QUERY) || [];
+        console.log(`[api] Found ${wanderBotsResult.length} wandering bots`);
+        for (const wanderBot of wanderBotsResult) {
+            wanderBot.wander_bot = true;
+        }
+        mergedResults.push(...wanderBotsResult);
+    }
     console.log(`[api] Total characters: ${mergedResults.length}`);
     
     const arr = [];
@@ -4119,14 +4153,16 @@ app.get('/api/players', async (req, res) => {
         let gmPlayer = false;
         let showPlayer = true;
         
+        const isWanderBot = character.wander_bot === true;
+
         // Add bot identifier to name if guid > NPCBOT_GUID_MIN
-        if (character.guid > NPCBOT_GUID_MIN) {
+        if (character.guid > NPCBOT_GUID_MIN && !isWanderBot) {
             character.name = `${character.name} (${character.guid})`;
         }
 
-        // Tell real players, NPCBots and playerbots apart
+        // Tell real players, NPCBots and playerbots (wandering bots too) apart
         let charKind = CHAR_KIND_PLAYER;
-        if (playerbotAccounts.includes(character.account.toString())) {
+        if (isWanderBot || playerbotAccounts.includes(character.account.toString())) {
             charKind = CHAR_KIND_PLAYERBOT;
         } else if (character.guid > NPCBOT_GUID_MIN) {
             charKind = CHAR_KIND_NPCBOT;
@@ -4173,7 +4209,7 @@ app.get('/api/players', async (req, res) => {
             z: character.position_z,
             guid: character.guid,
             kind: charKind,
-            dead: 0, // TODO?
+            dead: character.dead || 0, // wandering bots only, TODO? for the rest
             name: character.name,
             map: character.map,
             zone: getZoneName(character.zone),

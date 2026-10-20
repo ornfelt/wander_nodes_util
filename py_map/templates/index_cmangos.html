@@ -433,6 +433,7 @@
         // Teleport commands copied to the clipboard when a pin is clicked
         var NPCBOT_GO_CMD = ".npcb go";
         var GO_XYZ_CMD    = ".go xyz";
+        var GONAME_CMD    = ".goname";
 
         // Gap between the cursor and a tooltip sitting above it
         var TIP_CURSOR_GAP = 8;
@@ -479,10 +480,22 @@
             return Number(value).toFixed(GO_COORD_DECIMALS);
         }
 
+        // Character name without the " (guid)" the server appends to bots above NPCBOT_GUID_MIN
+        function characterName(name) {
+            var suffix = name.lastIndexOf(" (");
+            if (suffix > 0 && name.charAt(name.length - 1) == ")")
+                return name.substring(0, suffix);
+            return name;
+        }
+
         // Teleport command to copy when the pin of a point is clicked
         function pointGoCommand(point) {
             if (point.kind == CHAR_KIND_NPCBOT && point.guid)
                 return NPCBOT_GO_CMD + " " + point.guid;
+            // Playerbots (wandering bots too) are online players that keep moving: go to them by name, not to
+            // where they were at the last refresh
+            if (point.kind == CHAR_KIND_PLAYERBOT && point.name)
+                return GONAME_CMD + " " + characterName(point.name);
             return GO_XYZ_CMD + " " + goCoord(point.position_x) + " " + goCoord(point.position_y) + " " + goCoord(point.position_z) + " " + point.map_id;
         }
 

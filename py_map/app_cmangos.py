@@ -57,6 +57,17 @@ CHAR_KIND_PLAYERBOT = 2  # Playerbots module bot
 # NPCBots live above this guid
 NPCBOT_GUID_MIN = 70000
 
+# vmangos wandering bots are never saved to `characters`: the server writes the online ones to
+# `characters_playermap` (WanderBot.PlayerMapInterval in mangosd.conf)
+WANDER_BOT_SERVERS = [ServerType.VMANGOS.value]
+WANDER_BOT_QUERY = """
+    SELECT `guid`, `account`, `name`, `class`, `race`, `level`, `gender`,
+           `position_x`, `position_y`, `position_z`, `map`, `zone`, `extra_flags`, `dead`
+    FROM `characters_playermap`
+    WHERE `online`='1'
+    ORDER BY `name`
+"""
+
 # Playerbots module accounts are named '<prefix>0', '<prefix>1', ...
 # (AiPlayerbot.RandomBotAccountPrefix in playerbots.conf)
 PLAYERBOT_ACCOUNT_PREFIX = os.getenv('PLAYERBOT_ACCOUNT_PREFIX', 'rndbot')
@@ -2623,6 +2634,14 @@ def get_players():
     #if bots_result:
     #    merged_results.extend(bots_result)
     
+    # Wandering bots, marked so the loop below tells them apart from players
+    if SELECTED_SERVER in WANDER_BOT_SERVERS:
+        wander_bots_result = characters_db.query(WANDER_BOT_QUERY) or []
+        print(f"[api] Found {len(wander_bots_result)} wandering bots")
+        for wander_bot in wander_bots_result:
+            wander_bot['wander_bot'] = True
+        merged_results.extend(wander_bots_result)
+
     print(f"[api] Total characters: {len(merged_results)}")
     
     arr = []
@@ -2640,12 +2659,14 @@ def get_players():
         gm_player = False
         show_player = True
         
+        is_wander_bot = character.get('wander_bot', False)
+
         # Add bot identifier to name if guid > NPCBOT_GUID_MIN
-        if character['guid'] > NPCBOT_GUID_MIN:
+        if character['guid'] > NPCBOT_GUID_MIN and not is_wander_bot:
             character['name'] = f"{character['name']} ({character['guid']})"
 
-        # Tell real players, NPCBots and playerbots apart
-        if str(character['account']) in playerbot_accounts:
+        # Tell real players, NPCBots and playerbots (wandering bots too) apart
+        if is_wander_bot or str(character['account']) in playerbot_accounts:
             char_kind = CHAR_KIND_PLAYERBOT
         elif character['guid'] > NPCBOT_GUID_MIN:
             char_kind = CHAR_KIND_NPCBOT
@@ -2685,7 +2706,7 @@ def get_players():
             'z': character['position_z'],
             'guid': character['guid'],
             'kind': char_kind,
-            'dead': 0,  # TODO?
+            'dead': character.get('dead', 0),  # wandering bots only, TODO? for the rest
             'name': character['name'],
             'map': character['map'],
             'zone': get_zone_name(character['zone']),
